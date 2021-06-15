@@ -8,5 +8,10 @@
 		        (#{gameId}, #{betVO.loginID}, #{betVO.amount}, #{betVO.bet_time}, #{betVO.target}, #{betVO.result}, #{betVO.get_money})
 		    </foreach>	
 		</foreach>		
-	</insert> 
+	</insert>
+	
+    <select id="getBetRecordsByID" parameterType="String" resultType="map">
+		SELECT * FROM bet_records
+		where user_account=#{loginID};    
+    </select>		 
 </mapper>

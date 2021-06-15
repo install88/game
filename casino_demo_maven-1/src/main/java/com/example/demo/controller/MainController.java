@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.example.demo.IContent;
+import com.example.demo.service.BetRecordsService;
 import com.example.demo.service.MemberService;
 import com.example.demo.service.RoomService;
 import com.example.demo.vo.GameVO;
@@ -22,7 +23,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Controller
 public class MainController {
 	@Autowired
-    private MemberService memberService;		
+    private MemberService memberService;
+	
+	@Autowired
+    private BetRecordsService betRecordsService;	
 
 	@RequestMapping(value = { "", "/index.html" },method = RequestMethod.GET)
 	public String index(HttpSession session, Model model) throws JsonProcessingException, ParseException {
@@ -60,6 +64,19 @@ public class MainController {
 		}
 	}
 	
+	@RequestMapping(value = { "/showRecords.html" },method = RequestMethod.GET)
+	public String showRecords(HttpSession session, Model model) throws JsonProcessingException, ParseException {
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		String loginID = "";
+		if (principal instanceof UserDetails) {
+			loginID = ((UserDetails) principal).getUsername();
+		} else {
+			loginID = principal.toString();
+		}
+		model.addAttribute("records", betRecordsService.getBetRecordsByID(loginID));		
+		return "showRecords";
+	}	
+	
 	@RequestMapping(value = { "/backend.html" },method = RequestMethod.GET)
 	public String backend(HttpSession session, Model model,@RequestParam String roomNO) {
 		RoomService roomService = RoomService.getInstance();
@@ -71,8 +88,7 @@ public class MainController {
 			loginID = ((UserDetails) principal).getUsername();
 		} else {
 			loginID = principal.toString();
-		}
-		
+		}		
 		//
 		memberService.setAdmin(loginID);
 		

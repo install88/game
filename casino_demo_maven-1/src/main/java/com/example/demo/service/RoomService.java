@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.IContent;
 import com.example.demo.mapper.BetRecordsMapper;
 import com.example.demo.mapper.GameRecordsMapper;
+import com.example.demo.mapper.ManagerMapper;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.vo.BetVO;
 import com.example.demo.vo.GameVO;
@@ -35,7 +36,11 @@ public class RoomService {
     private BetRecordsMapper betRecordsMapper;	
 
 	@Autowired
-    private UserMapper userMapper;	
+    private UserMapper userMapper;
+	
+	@Autowired
+    private ManagerMapper managerMapper;	
+	
 //	private RoomService() {
 //		this.rooms = new HashMap<String,RoomVO>();
 //		RoomVO room1 = new RoomVO();
@@ -147,7 +152,6 @@ public class RoomService {
 		GameVO gameVO = roomVO.getGames().get(roomVO.getGames().size()-1);
 		gameVO.setBet_end_time(new Timestamp(System.currentTimeMillis()));
 		gameRecordsMapper.gameRecordsUpdateEndBettingTime(gameVO);
-//		betRecordsMapper.betRecordsSave(gameVO);
 		if(IContent.ROOM_STATUS_NORMAL.contentEquals(roomVO.getStatus())) {
 			if(IContent.GAME_STATUS_BETTING.contentEquals(gameVO.getStatus())) {
 				gameVO.setStatus(IContent.GAME_STATUS_DRAWING);
@@ -155,39 +159,53 @@ public class RoomService {
 		}
 		return gameVO;
 	}
-	public GameVO doDrawing(String roomNO,LinkedHashMap<String,Integer> resultPool) {
+	public GameVO doDrawing(String roomNO,LinkedHashMap<String,Integer> resultPool, String loginID) {
 		MemberService memService = new MemberService(); 
 		RoomVO roomVO = _ROOM.rooms.get(roomNO);
 		GameVO gameVO = roomVO.getGames().get(roomVO.getGames().size()-1);
 		if(IContent.ROOM_STATUS_NORMAL.contentEquals(roomVO.getStatus())) {
 			if(IContent.GAME_STATUS_DRAWING.contentEquals(gameVO.getStatus())) {
 				if(gameVO.hasBetRecords()) {
-					HashSet<String> loginIdSet = new HashSet();
+					HashSet<String> loginIdSet = new HashSet<String>();
+					float banker_get_money = 0;
 //					Integer limit_amount = gameVO.getLimit_amount();
 					for(String key : resultPool.keySet()) {
-						if(resultPool.get(key)==0) {
+						if(resultPool.get(key)==0) {//莊贏
 							for(BetVO betVO:gameVO.getRecords().get(key)) {
+								//莊家贏的錢
+								banker_get_money += (betVO.getAmount() *100);								
+								//閒家下注紀錄賺的錢
 								betVO.setGet_money(0);
 								betVO.setResult(0);
 								loginIdSet.add(betVO.getLoginID());								
 							}
-						}else if(resultPool.get(key)==1) {
+						}else if(resultPool.get(key)==1) {//閒贏
 							for(BetVO betVO:gameVO.getRecords().get(key)) {
+								//莊家贏的錢
+								banker_get_money += (betVO.getAmount() * -100);										
+								//閒家下注紀錄賺的錢
 								betVO.setGet_money(betVO.getAmount()* (float)1.95);
 								betVO.setResult(1);
 								memService.plusMoney(betVO.getLoginID(), betVO.getAmount()*100 *(float)1.95);
 								loginIdSet.add(betVO.getLoginID());
 							}							
 						}else {
-							for(BetVO betVO:gameVO.getRecords().get(key)) {
+							for(BetVO betVO:gameVO.getRecords().get(key)) {//平手
 								betVO.setGet_money(betVO.getAmount());
 								betVO.setResult(2);
 								memService.plusMoney(betVO.getLoginID(), betVO.getAmount()*100);
 								loginIdSet.add(betVO.getLoginID());
 							}							
 						}
-					}																	
+					}				
+					
+					//新增User的下注紀錄
 					betRecordsMapper.betRecordsSave(gameVO.getId(), gameVO.getRecords());
+					
+					//更新莊家錢包
+					managerMapper.managerWalletUpdate(loginID, banker_get_money);
+					
+					//更新User的錢包
 					HashMap<String,Float> loginIdMap = new HashMap();
 					for (String loginId : loginIdSet) {
 						userMapper.userWalletUpdate(loginId, memService.getMoney(loginId));

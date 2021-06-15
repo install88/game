@@ -281,7 +281,7 @@ public class CasinoAPIService {
 			if(!roomVO.getAdmID().contentEquals(loginID)) {
 				errMsg.add("權限不足，執行者與房間管理者不相同！");
 			}else {
-				GameVO gameVO = roomService2.doDrawing(roomNO, resultMap);
+				GameVO gameVO = roomService2.doDrawing(roomNO, resultMap, loginID);
 				
 			}
 			
