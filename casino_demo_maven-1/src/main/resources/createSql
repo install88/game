@@ -1,0 +1,95 @@
+-- test_game.manager definition
+
+CREATE TABLE `manager` (
+  `m_id` int(11) NOT NULL AUTO_INCREMENT,
+  `account` varchar(100) NOT NULL,
+  `password` varchar(100) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `wallet` int(11) NOT NULL,
+  PRIMARY KEY (`m_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='管理者';
+
+
+-- test_game.`user` definition
+
+CREATE TABLE `user` (
+  `account` varchar(100) NOT NULL,
+  `password` varchar(100) NOT NULL,
+  `userName` varchar(100) NOT NULL,
+  `cellphone` varchar(100) NOT NULL,
+  `wallet` float NOT NULL,
+  PRIMARY KEY (`account`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- test_game.room definition
+
+CREATE TABLE `room` (
+  `room_id` int(11) NOT NULL AUTO_INCREMENT,
+  `r_admID` int(11) NOT NULL,
+  `roomNO` varchar(100) NOT NULL,
+  PRIMARY KEY (`room_id`),
+  KEY `room_FK` (`r_admID`),
+  CONSTRAINT `room_FK` FOREIGN KEY (`r_admID`) REFERENCES `manager` (`m_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='房間清單';
+
+
+-- test_game.game_records definition
+
+CREATE TABLE `game_records` (
+  `game_records_id` int(11) NOT NULL AUTO_INCREMENT,
+  `room_id` int(11) DEFAULT NULL,
+  `create_time` timestamp NOT NULL DEFAULT current_timestamp(),
+  `bet_start_time` timestamp NULL DEFAULT NULL,
+  `bet_end_time` timestamp NULL DEFAULT NULL,
+  `admin_get_money` float DEFAULT NULL,
+  `end_time` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`game_records_id`),
+  KEY `game_records_FK` (`room_id`),
+  CONSTRAINT `game_records_FK` FOREIGN KEY (`room_id`) REFERENCES `room` (`room_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8 COMMENT='建立遊戲紀錄';
+
+
+-- test_game.games definition
+
+CREATE TABLE `games` (
+  `game_id` int(11) NOT NULL AUTO_INCREMENT,
+  `room_id` int(11) NOT NULL,
+  `g_content` varchar(100) NOT NULL,
+  `g_title` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`game_id`),
+  KEY `games_FK` (`room_id`),
+  CONSTRAINT `games_FK` FOREIGN KEY (`room_id`) REFERENCES `room` (`room_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='遊戲清單';
+
+
+-- test_game.games_rule definition
+
+CREATE TABLE `games_rule` (
+  `g_rule_id` int(11) NOT NULL AUTO_INCREMENT,
+  `g_id` int(11) NOT NULL,
+  `rate` float DEFAULT NULL,
+  `gr_status` int(11) DEFAULT NULL COMMENT '0:閒贏莊、1:莊贏閒、2:平手、3:不用管',
+  PRIMARY KEY (`g_rule_id`),
+  KEY `games_rule_FK` (`g_id`),
+  CONSTRAINT `games_rule_FK` FOREIGN KEY (`g_id`) REFERENCES `games` (`game_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='遊戲規則';
+
+
+-- test_game.bet_records definition
+
+CREATE TABLE `bet_records` (
+  `bet_records_id` int(11) NOT NULL AUTO_INCREMENT,
+  `game_records_id` int(11) NOT NULL,
+  `user_account` varchar(100) NOT NULL,
+  `bet_amount` int(11) NOT NULL,
+  `bet_time` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `target` varchar(100) NOT NULL COMMENT 'A、B、C道門',
+  `status` int(11) NOT NULL COMMENT '0:莊贏、1:閒贏、2:平手、3:不用管',
+  `get_money` float DEFAULT NULL,
+  PRIMARY KEY (`bet_records_id`),
+  KEY `bet_records_FK` (`game_records_id`),
+  KEY `bet_records_FK_1` (`user_account`),
+  CONSTRAINT `bet_records_FK` FOREIGN KEY (`game_records_id`) REFERENCES `game_records` (`game_records_id`),
+  CONSTRAINT `bet_records_FK_1` FOREIGN KEY (`user_account`) REFERENCES `user` (`account`)
+) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8 COMMENT='下注紀錄';
