@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.BetRecordsMapper">    
+	<insert id="betRecordsSave">
+		INSERT INTO bet_records(game_records_id, user_account, bet_amount, bet_time, target, status, get_money) VALUES
+		<foreach collection="betMap.entrySet()" item="betList" index="key" separator="," >
+		    <foreach collection="betList" item="betVO" index="index" separator=",">	        	       
+		        (#{gameId}, #{betVO.loginID}, #{betVO.amount}, #{betVO.bet_time}, #{betVO.target}, #{betVO.result}, #{betVO.get_money})
+		    </foreach>	
+		</foreach>		
+	</insert> 
+</mapper>

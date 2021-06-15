@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>房間管理</title>
+
+	<link href="assets/img/favicon.144x144.png" rel="apple-touch-icon" type="image/png" sizes="144x144">
+	<link href="assets/img/favicon.114x114.png" rel="apple-touch-icon" type="image/png" sizes="114x114">
+	<link href="assets/img/favicon.72x72.png" rel="apple-touch-icon" type="image/png" sizes="72x72">
+	<link href="assets/img/favicon.57x57.png" rel="apple-touch-icon" type="image/png">
+	<link href="assets/img/favicon.png" rel="icon" type="image/png">
+	<link href="assets/img/favicon.ico" rel="shortcut icon">
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+	<link rel="stylesheet" href="assets/css/separate/elements/player.min.css">
+	<link rel="stylesheet" href="assets/css/lib/lobipanel/lobipanel.min.css">
+	<link rel="stylesheet" href="assets/css/separate/vendor/lobipanel.min.css">
+	<link rel="stylesheet" href="assets/css/lib/jqueryui/jquery-ui.min.css">
+	<link rel="stylesheet" href="assets/css/separate/pages/widgets.min.css">
+    <link rel="stylesheet" href="assets/css/lib/font-awesome/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/lib/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+
+<body class="with-side-menu dark-theme dark-theme-blue">
+	<header th:replace="room_layout::header"></header><!--.site-header-->
+	<div class="mobile-menu-left-overlay"></div>
+	<nav class="side-menu">
+	    <div class="side-menu-avatar">
+	        <div class="avatar-preview avatar-preview-100">
+	            <img src="assets/img/avatar-1-256.png" alt="">
+	        </div>
+
+	    </div>
+	    <ul class="side-menu-list">
+	    	
+	        <li class="brown">
+	            <a href="#">
+	                <i class="font-icon font-icon-home"></i>
+	                <span class="lbl">在線玩家：</span>
+	            </a>
+	        </li>
+	        
+	    </ul>
+	</nav><!--.side-menu-->
+
+	<div class="page-content" style="padding-top:25px;">
+	    <div class="container-fluid">
+	        <div class="row">
+	        	<div class="col-sm-4">
+					<div class="alert alert-info" role="alert">
+						<strong>房間狀態：</strong><br/>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="alert alert-info" role="alert">
+						<strong th:text="${roomVO?.status}">待初始化</strong><br/>
+					</div>
+				</div>
+				<div class="col-sm-2" th:switch="${roomVO?.status}">
+					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'INIT'" onclick="javascript:initRoom();">初始化房間</button>
+					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'NORMAL'" onclick="javascript:closeRoom();">關閉房間</button>
+				</div>
+			</div><!--.row-->
+			
+			<div class="row" th:if="${gameVO} != null and ${roomVO.status != 'INIT'}">
+	        	<div class="col-sm-4">
+					<div class="alert alert-info" role="alert">
+						<strong>遊戲狀態：</strong><br/>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="alert alert-info" role="alert">
+						<strong th:text="${gameVO?.status}">初始化</strong><br/>
+					</div>
+				</div>
+				<div class="col-sm-2" th:switch="${gameVO?.status}">
+					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'INIT'" onclick='javascript:runGame();'>開始主持人發牌</button>
+					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'RUNNING'" onclick='javascript:startBetting();'>開始下注</button>
+					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'BETTING'" onclick='javascript:stopBetting();'>停止押注與進行開獎</button>
+					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'CLOSE'" onclick='javascript:createNewGame();'>進行下一場</button>
+				</div>
+			</div><!--.row-->
+			<div class="row">
+				<div class="col-xl-12">
+					<div class="widget-chart-extra-section" >
+						<div class="tbl widget-chart-extra-stat">
+							<div class="tbl-row">
+								<div class="tbl-cell">
+									<div class="title">投注池總額：</div>
+									<div class="number" id="amount">0</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xl-12">
+	                <div class="row">
+	                    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
+	                        <article class="statistic-box red">
+	                            <div>
+	                                <div class="number" id="amount_a">0</div>
+	                                <div class="caption"><div>A池</div></div>
+	                                <div class="percent">
+	                                    &nbsp;
+	                                </div>
+	                            </div>
+	                        </article>
+	                        <div style="text-align: center;" th:switch="${gameVO?.status}">
+	                        	<div class="btn-group btn-group-lg" role="group">
+<!-- 									<button type="button" class="btn btn-inline btn-primary" th:case="'DRAWING'" onclick="javascript:doDrawing('A');">開</button> -->
+									<select th:case="'DRAWING'" name="result">										
+									    <option th:value="0" th:text="莊贏"></option>
+									    <option th:value="1" th:text="閒贏"></option>
+									    <option th:value="2" th:text="平手"></option>	
+									</select>									
+								</div>
+	                        </div>
+	                 
+	                        
+	                    </div><!--.col-->
+	                    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12" >
+	                        <article class="statistic-box purple">
+	                            <div>
+	                                <div class="number" id="amount_b">0</div>
+	                                <div class="caption"><div>B池</div></div>
+	                                <div class="percent">
+	                                    &nbsp;
+	                                </div>
+	                            </div>
+	                        </article>
+	                        <div style="text-align: center;">
+	                        	<div class="btn-group btn-group-lg" role="group" th:switch="${gameVO?.status}">
+<!-- 									<button type="button" class="btn btn-inline btn-primary" th:case="'DRAWING'" onclick="javascript:doDrawing('B');">開</button> -->
+									<select th:case="'DRAWING'" name="result">										
+									    <option th:value="0" th:text="莊贏"></option>
+									    <option th:value="1" th:text="閒贏"></option>
+									    <option th:value="2" th:text="平手"></option>	
+									</select>									
+								</div>
+	                        </div>
+	                    </div><!--.col-->
+	                    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
+	                        <article class="statistic-box yellow">
+	                            <div>
+	                                <div class="number" id="amount_c">0</div>
+	                                <div class="caption"><div>C池</div></div>
+	                                <div class="percent">
+	                                    &nbsp;
+	                                </div>
+	                            </div>
+	                        </article>
+	                        <div style="text-align: center;">
+	                        	<div class="btn-group btn-group-lg" role="group" th:switch="${gameVO?.status}">
+<!-- 									<button type="button" class="btn btn-inline btn-primary" th:case="'DRAWING'" onclick="javascript:doDrawing('C');">開</button> -->
+									<select th:case="'DRAWING'" name="result">										
+									    <option th:value="0" th:text="莊贏"></option>
+									    <option th:value="1" th:text="閒贏"></option>
+									    <option th:value="2" th:text="平手"></option>	
+									</select>									
+								</div>
+	                        </div>
+	                    </div><!--.col-->
+	                    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
+	                        <article class="statistic-box green">
+	                            <div>
+	                                <div class="number" id="amount_d">0</div>
+	                                <div class="caption"><div>D池</div></div>
+	                                <div class="percent">
+	                                    &nbsp;
+	                                </div>
+	                            </div>
+	                        </article>
+	                        <div style="text-align: center;">
+	                        	<div class="btn-group btn-group-lg" role="group" th:switch="${gameVO?.status}">
+<!-- 									<button type="button" class="btn btn-inline btn-primary" th:case="'DRAWING'" onclick="javascript:doDrawing('D');">開</button> -->
+									<select th:case="'DRAWING'" name="result">										
+									    <option th:value="0" th:text="莊贏"></option>
+									    <option th:value="1" th:text="閒贏"></option>
+									    <option th:value="2" th:text="平手"></option>	
+									</select>									
+								</div>
+	                        </div>
+<!-- 							<button type="button" class="btn btn-inline btn-primary" th:case="'DRAWING'" onclick="javascript:doDrawing('C');">開</button>	                         -->
+	                    </div><!--.col-->
+	                    <div th:switch="${gameVO?.status}">
+	                    	<button type="button" class="btn btn-inline btn-primary" th:case="'DRAWING'" onclick="javascript:doDrawing('C');">開</button>
+	                    </div>
+	                </div><!--.row-->
+	            </div><!--.col-->
+			</div>
+	        <div class="row">
+	            <div class="col-xl-6 dahsboard-column">
+	               
+	                
+	            </div><!--.col-->
+	            <div class="col-xl-6 dahsboard-column">
+	                
+	                
+	            </div><!--.col-->
+	        </div>
+	    </div><!--.container-fluid-->
+	</div><!--.page-content-->
+
+	<script src="assets/js/lib/jquery/jquery-3.2.1.min.js"></script>
+	<script src="assets/js/lib/popper/popper.min.js"></script>
+	<script src="assets/js/lib/tether/tether.min.js"></script>
+	<script src="assets/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="assets/js/plugins.js"></script>
+	<script type="text/javascript" src="assets/js/lib/jqueryui/jquery-ui.min.js"></script>
+	<script src="assets/js/sockjs.min.js"></script>
+    <script src="assets/js/stomp.min.js"></script>
+	
+
+	<script>
+		var roomNO = '[[${roomVO.no}]]';
+	 	var stompClient = null;
+	 	var socket = null;
+		$(document).ready(function() {
+			//WebSocket
+	        connect();
+			
+		});
+		function connect() {
+	        socket = new SockJS("ws?token=12345&roomNO="+roomNO);
+	        stompClient = Stomp.over(socket);
+	        stompClient.connect({}, function(frame) {
+	            console.log('Connected:' + frame);
+	            stompClient.subscribe('/user/topic/roomStatus',  function(data) {
+	                console.log("data="+data);
+	            	var jsonObj = $.parseJSON(data.body);
+	            	var payload = jsonObj.payload;
+            		var poolMap = payload.poolMap;
+            		$("#amount").text(payload.amount);
+	                $("#amount_a").text(poolMap["A"]);
+	                $("#amount_b").text(poolMap["B"]);
+	                $("#amount_c").text(poolMap["C"]);
+	                $("#amount_d").text(poolMap["D"]);
+	            });
+	            getRoomStatus();
+	        },function(err){
+	            console.log(err);
+	        });
+	        
+	    }
+		function getRoomStatus(){
+	    	stompClient.send("/app/casino/getStatus", {}, JSON.stringify({'roomNO': roomNO}));
+
+	    }
+	    function disconnect() {
+	        if (stompClient != null) {
+	            stompClient.disconnect();
+	        }
+	        console.log("Disconnected");
+	    }
+	    function initRoom(){
+	    	$.ajax({
+				async:true,
+				type: 'PUT',
+				url: '/api/casino/v1/initRoom/'+roomNO,
+				data: {},
+				success: function(jObj,status){
+					if("000"==jObj.RETCODE){
+						result = jObj.RET;
+						location.reload();
+					}else{
+						alert("錯誤！errorCode:"+jObj.RETCODE);
+						console.log(jOb.MSG);
+					}
+				},
+				error:function(res){
+					console.log(res);
+				}
+			});
+	    }
+	    function runGame(){
+	    	$.ajax({
+				async:true,
+				type: 'PUT',
+				url: '/api/casino/v1/runGame/'+roomNO,
+				data: {},
+				success: function(jObj,status){
+					if("000"==jObj.RETCODE){
+						result = jObj.RET;
+						getRoomStatus();
+						location.reload();
+					}else{
+						alert("錯誤！errorCode:"+jObj.RETCODE);
+						console.log(jOb.MSG);
+					}
+				},
+				error:function(res){
+					console.log(res);
+				}
+			});
+	    }
+	    function startBetting(){
+	    	$.ajax({
+				async:true,
+				type: 'PUT',
+				url: '/api/casino/v1/startBetting/'+roomNO,
+				data: {},
+				success: function(jObj,status){
+					if("000"==jObj.RETCODE){
+						result = jObj.RET;
+						getRoomStatus();
+						location.reload();
+					}else{
+						alert("錯誤！errorCode:"+jObj.RETCODE);
+						console.log(jOb.MSG);
+					}
+				},
+				error:function(res){
+					console.log(res);
+				}
+			});
+	    }
+	    
+	    function createNewGame(){
+	    	$.ajax({
+				async:true,
+				type: 'PUT',
+				url: '/api/casino/v1/createNewGame/'+roomNO,
+				data: {},
+				success: function(jObj,status){
+					if("000"==jObj.RETCODE){
+						result = jObj.RET;
+						getRoomStatus();
+						location.reload();
+					}else{
+						alert("錯誤！errorCode:"+jObj.RETCODE);
+						console.log(jOb.MSG);
+					}
+				},
+				error:function(res){
+					console.log(res);
+				}
+			});
+	    }
+	    function stopBetting(){
+	    	$.ajax({
+				async:true,
+				type: 'PUT',
+				url: '/api/casino/v1/stopBetting/'+roomNO,
+				data: {},
+				success: function(jObj,status){
+					if("000"==jObj.RETCODE){
+						result = jObj.RET;
+						location.reload();
+					}else{
+						alert("錯誤！errorCode:"+jObj.RETCODE);
+						console.log(jOb.MSG);
+					}
+				},
+				error:function(res){
+					console.log(res);
+				}
+			});
+	    }
+	    function doDrawing(winnerPool){
+	    	var myMap = new Map();	    	
+			var results = $('select[name="result"]');
+			data = {
+					"A": $("option:selected", results[0]).val(),
+					"B": $("option:selected", results[1]).val(),
+					"C": $("option:selected", results[2]).val(),
+					"D": $("option:selected", results[3]).val()
+					}	
+	    	$.ajax({
+				async:true,
+				type: 'PUT',
+				contentType : 'application/json;charset=utf-8',
+				url: '/api/casino/v1/doDrawing/'+roomNO,
+				dataType : 'json',
+				data: JSON.stringify(data),
+				success: function(jObj,status){
+					if("000"==jObj.RETCODE){
+						stopDrawing();						
+					}else{
+						alert("錯誤！errorCode:"+jObj.RETCODE);
+						console.log(jOb.MSG);
+					}
+				},
+				error:function(res){
+					console.log(res);
+				}
+			});
+	    }
+	    function stopDrawing(){
+	    	$.ajax({
+				async:true,
+				type: 'PUT',
+				url: '/api/casino/v1/stopDrawing/'+roomNO,
+				data: {},
+				success: function(jObj,status){
+					if("000"==jObj.RETCODE){
+						result = jObj.RET;
+						location.reload();
+					}else{
+						alert("錯誤！errorCode:"+jObj.RETCODE);
+						console.log(jOb.MSG);
+					}
+				},
+				error:function(res){
+					console.log(res);
+				}
+			});
+	    }
+	    function closeRoom(){
+	    	$.ajax({
+				async:true,
+				type: 'PUT',
+				url: '/api/casino/v1/closeRoom/'+roomNO,
+				data: {},
+				success: function(jObj,status){
+					if("000"==jObj.RETCODE){
+						result = jObj.RET;
+						location.reload();
+					}else{
+						alert("錯誤！errorCode:"+jObj.RETCODE);
+						console.log(jOb.MSG);
+					}
+				},
+				error:function(res){
+					console.log(res);
+				}
+			});
+	    }
+	    function getRoomStatus(){
+	    	stompClient.send("/app/casino/getStatus", {}, JSON.stringify({'roomNO': roomNO}));
+	    }
+	    
+	</script>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.GameRecordsMapper">    
+	<insert id="gameRecordsSave" parameterType="GameVO" useGeneratedKeys="true" keyProperty="id" keyColumn="g_records_id">
+		insert into game_records(room_id)
+		values(#{room_id, jdbcType=INTEGER})
+	</insert>
+	
+	<update id="gameRecordsUpdateStartBettingTime" parameterType="GameVO">
+		update game_records set bet_start_time= #{bet_start_time}
+		where game_records_id = #{id}
+	</update>   	
+	
+	<update id="gameRecordsUpdateEndBettingTime" parameterType="GameVO">
+		update game_records set bet_end_time= #{bet_end_time}
+		where game_records_id = #{id}
+	</update>   	 
+	
+	<update id="gameRecordsUpdateEndTime" parameterType="GameVO">
+		update game_records set end_time= #{end_time}
+		where game_records_id = #{id}
+	</update>	
+	
+<!--     <select id="getAllFromLastMessage" parameterType="String" resultType="map"> -->
+<!-- 		SELECT * FROM CUSTOMER AS cus -->
+<!-- 		RIGHT JOIN (SELECT * FROM message msg WHERE msg.msg_to = #{msg_to} and msg_time=(select max(msg_time) from message where msg_from=msg.msg_from)) AS m  -->
+<!-- 		ON cus.memID = m.msg_from;     -->
+<!--     </select> -->
+    
+<!--     <select id="getConversationRecord" parameterType="String" resultType="map"> -->
+<!-- 		SELECT cus_from.username AS msg_from_username ,cus_to.username AS msg_to_username ,msg.msg_content ,msg.msg_status ,msg.msg_time ,msg.msg_to -->
+<!-- 		FROM (SELECT * FROM customer) AS cus_from RIGHT JOIN (select * from message where (msg_from = #{msg_from} and msg_to = #{msg_to}) -->
+<!-- 													  		  union all -->
+<!-- 													  		  select * from message where (msg_from = #{msg_to} and msg_to = #{msg_from}) -->
+<!-- 													  		  order by msg_time) as msg ON cus_from.memID = msg.msg_from -->
+<!-- 									              LEFT JOIN customer cus_to ON cus_to.memID = msg.msg_to;				         -->
+<!--     </select> -->
+    
+<!--     <select id="getUnreadCount" parameterType="String" resultType="map"> -->
+<!--         select msg_from,count(*) as msg_count from message where msg_to = #{msg_to} and msg_status=0 group by msg_from -->        
+<!-- 		SELECT *,count(*) AS msg_count FROM CUSTOMER AS CUS -->
+<!-- 		RIGHT JOIN (SELECT msg_from from MESSAGE where msg_to = #{msg_to} and msg_status=0) as MSG -->
+<!-- 		on CUS.memID = MSG.msg_from -->
+<!-- 		group by msg_from;         -->
+<!--     </select>    -->
+    
+<!--     <select id="searchKeyword" parameterType="MsgVO" resultType="map"> -->
+<!--         select msg_from, msg_to, count(*) as msg_count from message where (msg_from = #{msg_from} or msg_to = #{msg_to}) and msg_content like #{msg_content} group by msg_from -->
+<!--     </select> -->    
+</mapper>
