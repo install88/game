@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>websocket</title>
+    <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script>
+    <script src="http://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+    
+    <style>		
+		.outer-container,.content {
+			font-size:20px;		
+		    width: 600px; height: 250px;
+		}
+		.outer-container {
+			margin:0 auto;
+			background-color: lightblue;
+		    position: relative;
+		    overflow: hidden;
+		}
+		.inner-container {
+		    position: absolute; left: 0;
+		    overflow-x: hidden;
+		    overflow-y: scroll;
+		}
+		
+		 /* for Chrome */
+		.inner-container::-webkit-scrollbar {
+		    display: none;
+		}		
+    </style>         
+</head>
+
+<body>
+	<div style="margin: auto;text-align: center">
+	    <h1>Welcome to websocket</h1>
+	    <input id="search" type="text"/>
+	    <button onclick="search()">搜尋</button>
+	</div>
+	<br/>
+	<div style="margin: auto;text-align: center">
+	    <select id="onLineUser">
+	        <option>ALL</option>
+	        <option>MEM15917263442630699</option>
+	        <option>MEM15932886040280583</option>
+	        <option>MEM15933335712790197</option>
+	    </select>
+	    <input id="text" type="text"/>
+	    <button onclick="send()">發送</button>
+	</div>
+	<br>
+	<div style="margin-right: 10px;text-align: right">
+	    <button onclick="closeWebSocket()">关闭连接</button>
+	</div>
+	<hr/>
+	
+	 <div class="outer-container" id="outer-container">
+	     <div class="inner-container" id="inner-container">
+	        <div class="content" style="text-align: center;" id = "message">
+	        </div>
+	     </div>
+	 </div>		
+	
+	<input type="text" th:value="${username}" id="username" style="display: none"/>
+</body>
+
+
+<script type="text/javascript">
+	let userMap= new Map();
+	const userName = document.getElementById('username').value;
+    var webSocket;
+    var commWebSocket;
+    if ("WebSocket" in window) {
+    	//ws://localhost:8080/websocket/{memID}
+        webSocket = new WebSocket("ws://localhost:8080/websocket/" + userName);
+
+        //連通之後觸發
+        webSocket.onopen = function () {
+//             console.log("已經連通了websocket");
+        };
+
+		//接收後端sever發送的消息
+        webSocket.onmessage = function (evt) {
+            var received_msg = evt.data;                    
+            console.log("數據已接收:" + received_msg);
+            var obj = JSON.parse(received_msg);
+            var msg_type = Object.keys(obj)[0];
+            console.log("msg_type=" + msg_type);
+            switch(msg_type){
+	            case "showLastMsg"://顯示朋友的最後一筆訊息
+	                obj[msg_type].forEach(function(msgVO){
+	    				console.log("發送人:" + msgVO.msg_from);
+	    				console.log("接收人:" + msgVO.msg_to);
+	    				console.log("訊息: "  + msgVO.msg_content);
+	    				console.log("狀態: "  + msgVO.msg_status);
+	    				console.log("時間: "  + new Date(msgVO.msg_time));
+	    				console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	    				setMessageInnerHTML(msgVO.username + ":" + msgVO.msg_content);
+	                });   
+                	break;
+				case "showMsgCount": //顯示朋友的未讀訊息筆數
+	                obj[msg_type].forEach(function(msgVO){
+	    				console.log("發送人:" + msgVO.msg_from);
+	    				console.log("筆數: "  + msgVO.msg_count);
+	    				console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	    				userMap.set(msgVO.msg_from,msgVO.msg_count);
+	    				setMessageInnerHTML(msgVO.username + ":" + userMap.get(msgVO.msg_from) + "筆未讀");
+	                });  
+                	break;                	
+				case "showRecord"://顯示與該朋友的對話
+					let haveRead = false; 
+	                obj[msg_type].forEach(function(msgVO){
+	                	if(haveRead == false && msgVO.msg_status == 0 && msgVO.msg_to == userName){
+	                		haveRead = true;
+	                		setMessageInnerHTML("下列未讀");
+	                		setMessageInnerHTML_adjustBar(msgVO.msg_from_username + ":" + msgVO.msg_content);
+	                	}else{
+	                		setMessageInnerHTML(msgVO.msg_from_username + ":" + msgVO.msg_content);	
+	                	}
+// 	    				console.log("發送人:" + msgVO.msg_from);
+// 	    				console.log("接收人:" + msgVO.msg_to);
+// 	    				console.log("訊息: "  + msgVO.msg_content);
+// 	    				console.log("狀態: "  + msgVO.msg_status);
+// 	    				console.log("時間: "  + new Date(msgVO.msg_time));
+// 	    				console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	                });
+	                //若訊息都是已讀狀態，將scrollbar拉至最底下。
+	                if(haveRead == false){
+	                	document.getElementById('inner-container').scrollTop = document.getElementById('inner-container').scrollHeight;
+	                }
+                	break;                	                	
+				case "receive_others_msg"://在線時，接收訊息。
+	            	var msgVO = obj[msg_type];
+	            	setMessageInnerHTML(msgVO.msg_from + ":" + msgVO.msg_content);
+	            	//若聊天視窗無開啟的情況，未讀訊息要增加。
+	            	if($("#onLineUser").val()!= msgVO.msg_from){
+	            		handleMapLogic(userMap, msgVO.msg_from, 1);
+	            		setMessageInnerHTML(msgVO.msg_from + "的未讀訊息有" + userMap.get(msgVO.msg_from));	
+	            	}else{            	
+	            		setMessageInnerHTML(msgVO.msg_from + "的未讀訊息有" + 0);            		
+	            		//已經開啟跟該用戶聊天的視窗，故要把訊息儲存成已讀。
+	                    var message = {            
+	                            "msg_from": msgVO.msg_from,
+	                            "msg_to": msgVO.msg_to,
+	                            "msg_type" : "updateMsgStatus"
+	                        };        
+						//發送訊息至後端server
+						webSocket.send(JSON.stringify(message));            		            		
+	            	}    
+                	break; 
+				case "receive_own_msg"://接收自己訊息。
+	            	var msgVO = obj[msg_type];
+	            	setMessageInnerHTML(msgVO.msg_from + ":" + msgVO.msg_content);  
+                	break;                 	                	                	                	
+				case "broadcast"://接收廣播訊息。
+	            	var msg_content = obj[msg_type];
+	            	setMessageInnerHTML(msg_content);
+                	break;                 	
+				default://取得關鍵字搜尋筆數(msg_type=showKeyword)
+					let keywordMap= new Map();
+					obj[msg_type].forEach(function(msgVO){
+						if(msgVO.msg_from == userName){
+                			handleMapLogic(keywordMap, msgVO.msg_to, msgVO.msg_count);
+                		}else{
+                			handleMapLogic(keywordMap, msgVO.msg_from, msgVO.msg_count);             		
+                		}
+                	}); 
+					console.log(keywordMap);
+            }
+        };
+
+        //連接關閉的回調事件
+        webSocket.onclose = function () {
+            console.log("連接已關閉...");
+        };
+    } else {
+        // 瀏覽器不支持 WebSocket
+        alert("瀏覽器不支持 WebSocket!");
+    }
+
+    function closeWebSocket() {
+        //直接關閉websocket的連接
+        webSocket.close();
+    }
+
+    //點擊發送按鈕送出訊息
+    function send() {
+        var selectText = $("#onLineUser").find("option:selected").text();
+        var message = {            
+                "msg_from": userName,
+                "msg_to": selectText,
+                "msg_content": document.getElementById('text').value,
+                "msg_status" : 0,
+            };                
+        if(selectText == "ALL"){
+        	message["msg_type"] = "broadcast";
+        }else{
+        	message["msg_type"] = "save";
+        }        
+      	//發送訊息至後端server
+        webSocket.send(JSON.stringify(message));
+        $("#text").val("");
+    }
+    
+    //處理map
+    function handleMapLogic(map, key, count) {
+    	if(map.has(key)){
+    		map.set(key, map.get(key) + count);
+    	}else{
+    		map.set(key, count)
+    	}
+    }       
+    
+    //點擊搜尋按鈕，搜尋關鍵字。
+    function search() {
+        var searchText = $("#search").val();
+        var message = {            
+            "msg_from": userName,
+            "msg_to": userName,
+            "msg_content": searchText,
+            "msg_type" : "searchKeyword"
+        };        
+      	//發送訊息至後端server
+        webSocket.send(JSON.stringify(message));
+        $("#search").val("");
+    }    
+    
+    function setMessageInnerHTML(innerHTML) {
+        document.getElementById('message').innerHTML += '<div>' + innerHTML + '<div/>';
+    }
+    
+    //scroll bar滑動至第一則未讀訊息上。
+    function setMessageInnerHTML_adjustBar(innerHTML) {
+        document.getElementById('message').innerHTML += "<div id='adjust_bar'>" + innerHTML + '<div/>';
+        var target_top = $("#adjust_bar").offset().top;
+        document.getElementById('inner-container').scrollTop = target_top;                    
+    }      
+    
+    //當選取清單變動時，查詢與該User的聊天紀錄      
+    $(document).ready(function(){
+        $("#onLineUser").change(function(){
+        	document.getElementById('message').
+        	innerHTML="";
+        	var msg_from = $("#onLineUser").val();
+            var message = {
+                    "msg_from": msg_from,
+                    "msg_to": userName,
+                    "msg_type" : "getMessage"
+                };
+            webSocket.send(JSON.stringify(message));            
+            //將未讀訊息數量改成0
+            if(userMap.has(msg_from)){
+            	userMap.set(msg_from,0);	
+            }            
+        });
+    });    
+</script>
+
+</html>
