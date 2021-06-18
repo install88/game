@@ -18,10 +18,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.IContent;
 import com.example.demo.service.RoomService;
 import com.example.demo.vo.GameVO;
 import com.example.demo.vo.RoomVO;
-import com.google.gson.Gson;
 
 
 @RestController
@@ -31,12 +32,9 @@ public class CasinoAPIService {
 	
 	@Autowired
     private RoomService roomService2;	
-
 	
 	@PutMapping(path = "v1/initRoom/{roomNO}", produces = "application/json;charset=utf-8")
 	public Map<String,Object> initRoom(HttpSession session,@PathVariable String roomNO) throws Exception {
-		RoomService roomService = RoomService.getInstance();
-		RoomVO roomVO = roomService.getRoom(roomNO);
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		String loginID = "";
 		if (principal instanceof UserDetails) {
@@ -45,6 +43,12 @@ public class CasinoAPIService {
 			loginID = principal.toString();
 		}
 		logger.info("User:{}, do initRoom", loginID);
+		
+		//創建房間者為莊家
+		RoomService roomService = RoomService.getInstance();
+		RoomVO roomVO = roomService.getRoom(roomNO);
+		roomVO.setAdmID(loginID);		
+	
 		Map<String, Object> result = new HashMap<String, Object>();
 		List<String> message = new ArrayList<String>();
 		result.put("RETCODE", "999");

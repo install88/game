@@ -29,7 +29,7 @@ public class PrincipalHandshakeHandler extends DefaultHandshakeHandler {
 	
 	@Override
 	protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
-		MemberService memService = new MemberService(); 
+		UserService userService = new UserService(); 
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		String loginID = "";
 		if (principal instanceof UserDetails) {
@@ -41,7 +41,7 @@ public class PrincipalHandshakeHandler extends DefaultHandshakeHandler {
 			if (StringUtils.isEmpty(loginID)) {
 				return null;
 			}else {
-				return new MyPrincipal(memService.getMemberByLoginID(loginID));
+				return new MyPrincipal(userService.getUserByLoginID(loginID));
 			}
 		}
 		return null;

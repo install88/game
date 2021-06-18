@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.example.demo.IContent;
 import com.example.demo.service.BetRecordsService;
-import com.example.demo.service.MemberService;
+import com.example.demo.service.UserService;
 import com.example.demo.service.RoomService;
 import com.example.demo.vo.GameVO;
 import com.example.demo.vo.RoomVO;
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @Controller
 public class MainController {
 	@Autowired
-    private MemberService memberService;
+    private UserService userService;
 	
 	@Autowired
     private BetRecordsService betRecordsService;	
@@ -36,8 +36,7 @@ public class MainController {
 			loginID = ((UserDetails) principal).getUsername();
 		} else {
 			loginID = principal.toString();
-		}
-		
+		}		
 		return "index";
 	}
 	@RequestMapping(value = { "/room.html" },method = RequestMethod.GET)
@@ -53,9 +52,8 @@ public class MainController {
 		} else {
 			loginID = principal.toString();
 		}
-		
-		//
-		memberService.getMemberById(loginID);
+		//儲存User資料至user map中
+		userService.storeUserDataById(loginID);
 		
 		if(!IContent.ROOM_STATUS_NORMAL.contentEquals(roomVO.getStatus())) {
 			return "room_closed";
@@ -81,7 +79,6 @@ public class MainController {
 	public String backend(HttpSession session, Model model,@RequestParam String roomNO) {
 		RoomService roomService = RoomService.getInstance();
 		RoomVO roomVO = roomService.getRoom(roomNO);
-		
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		String loginID = "";
 		if (principal instanceof UserDetails) {
@@ -89,9 +86,8 @@ public class MainController {
 		} else {
 			loginID = principal.toString();
 		}		
-		//
-		memberService.setAdmin(loginID);
-		
+		//紀錄莊家至map中管理
+		userService.storeUserDataById(loginID);		
 		GameVO gameVO = (roomVO.getGames()==null || roomVO.getGames().isEmpty())?null:roomVO.getGames().get(roomVO.getGames().size()-1);
 		model.addAttribute("roomVO", roomVO);
 		model.addAttribute("gameVO", gameVO);

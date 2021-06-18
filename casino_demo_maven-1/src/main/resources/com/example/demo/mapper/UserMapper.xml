@@ -6,6 +6,12 @@
 	        set wallet=#{money}
 	        where account = #{loginId}
 	</update>	
+	
+	<update id="bankerWalletUpdate">  
+	        update user
+	        set wallet= wallet +#{money}
+	        where account = #{loginId}
+	</update>	
 		
     <select id="getMemberById" parameterType="String" resultType="map">
 		SELECT * FROM user

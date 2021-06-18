@@ -13,9 +13,9 @@ import com.example.demo.mapper.UserMapper;
 import com.example.demo.vo.UserBean;
 
 @Service
-public class MemberService {
+public class UserService {
 	private Logger logger = LoggerFactory.getLogger(getClass());
-	private static Map<String, UserBean> mems = new HashMap<String, UserBean>();
+	private static Map<String, UserBean> users = new HashMap<String, UserBean>();
 //	private static MemberService _MEMSERVICE;
 	
 	@Autowired
@@ -38,20 +38,20 @@ public class MemberService {
 //		mems.put("test6", test6);
 //		mems.put("admin", admin);
 //	}
-	public void getMemberById(String loginId) {
-		if(null == mems.get(loginId)) {
+	public void storeUserDataById(String loginId) {
+		if(null == users.get(loginId)) {
 			Map<String,Object> userMap = userMapper.getMemberById(loginId);
 			String userName = (String) userMap.get("userName");
 			float money = (float) userMap.get("wallet");
 			UserBean userBean = new UserBean(loginId, userName, money);
-			mems.put(loginId, userBean);			
+			users.put(loginId, userBean);			
 		}
 	}
 	
-	public void setAdmin(String loginId) {
-		UserBean admin = new UserBean(loginId, "Admin", (float)5000);
-		mems.put(loginId, admin);
-	}	
+//	public void setAdmin(String loginId) {
+//		UserBean admin = new UserBean(loginId, "Admin", (float)5000);
+//		mems.put(loginId, admin);
+//	}	
 	
 //	public static MemberService getInstance() {
 //		if(null==MemberService._MEMSERVICE) {
@@ -60,18 +60,18 @@ public class MemberService {
 //		return MemberService._MEMSERVICE;
 //	}
 	
-	public UserBean getMemberByLoginID(String loginID) {
-		return mems.get(loginID);
+	public UserBean getUserByLoginID(String loginID) {
+		return users.get(loginID);
 	}
 	
 	public Float getMoney(String loginID) {
-		return mems.get(loginID).getMoney();
+		return users.get(loginID).getMoney();
 	}
 	public int countMem() {
-		return this.mems.size();
+		return this.users.size();
 	}
 	public Float plusMoney(String loginID, Float money) {
-		UserBean user = mems.get(loginID);
+		UserBean user = users.get(loginID);
 		user.setMoney(user.getMoney()+money);
 		return user.getMoney();
 	}

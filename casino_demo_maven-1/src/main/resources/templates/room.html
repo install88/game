@@ -246,46 +246,46 @@
 			//WebSocket
 	        connect();
 			$("#btnGroupA_100").click(function(e){
-				doBet(convertBet("A",1,roomNO));
+				doBet(convertBet("A",100,roomNO));
 				
 			});
 			$("#btnGroupA_200").click(function(e){
-				doBet(convertBet("A",2,roomNO));
+				doBet(convertBet("A",200,roomNO));
 				
 			});
 			
 			$("#btnGroupA_500").click(function(e){
-				doBet(convertBet("A",5,roomNO));
+				doBet(convertBet("A",500,roomNO));
 			});
 			
 			$("#btnGroupB_100").click(function(e){
-				doBet(convertBet("B",1,roomNO));
+				doBet(convertBet("B",100,roomNO));
 			});
 			$("#btnGroupB_200").click(function(e){
-				doBet(convertBet("B",2,roomNO));
+				doBet(convertBet("B",200,roomNO));
 			});
 			$("#btnGroupB_500").click(function(e){
-				doBet(convertBet("B",5,roomNO));
+				doBet(convertBet("B",500,roomNO));
 			});
 			
 			$("#btnGroupC_100").click(function(e){
-				doBet(convertBet("C",1,roomNO));
+				doBet(convertBet("C",100,roomNO));
 			});
 			$("#btnGroupC_200").click(function(e){
-				doBet(convertBet("C",2,roomNO));
+				doBet(convertBet("C",200,roomNO));
 			});
 			$("#btnGroupC_500").click(function(e){
-				doBet(convertBet("C",5,roomNO));
+				doBet(convertBet("C",500,roomNO));
 			});
 			
 			$("#btnGroupD_100").click(function(e){
-				doBet(convertBet("D",1,roomNO))
+				doBet(convertBet("D",100,roomNO))
 			});
 			$("#btnGroupD_200").click(function(e){
-				doBet(convertBet("D",2,roomNO))
+				doBet(convertBet("D",200,roomNO))
 			});
 			$("#btnGroupD_500").click(function(e){
-				doBet(convertBet("D",5,roomNO))
+				doBet(convertBet("D",500,roomNO))
 			});
 			
 		});
@@ -377,8 +377,7 @@
 	    	var bet_msg = JSON.parse(msg);
 	    	if("BETTING" == gameStatus){
 	    		var total_amount = parseInt($("#amount").text());
-	    		var bet_amount = bet_msg.amount * 100
-	    		
+	    		var bet_amount = bet_msg.amount;	    		
 				var myWallet = parseInt($("#myWallet").text());
 	    		if(myWallet < bet_amount){
 	    			alert("餘額不足！");

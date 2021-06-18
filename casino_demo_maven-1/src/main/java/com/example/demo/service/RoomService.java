@@ -27,7 +27,7 @@ import com.example.demo.vo.UserBean;
 public class RoomService {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	private Map<String,RoomVO> rooms ;
-	private static RoomService _ROOM ;
+	private static RoomService _ROOM;
 	
 	@Autowired
     private GameRecordsMapper gameRecordsMapper;
@@ -41,52 +41,26 @@ public class RoomService {
 	@Autowired
     private ManagerMapper managerMapper;	
 	
-//	private RoomService() {
-//		this.rooms = new HashMap<String,RoomVO>();
-//		RoomVO room1 = new RoomVO();
-//		room1.setAdmID("admin");
-//		room1.setNo("ROOM1");
-//		room1.setId("1");
-//		room1.setOwnerID("admin");	
-//		room1.setStatus(IContent.ROOM_STATUS_INIT);
-//		this.rooms.put("ROOM1", room1);
-//		RoomVO room2 = new RoomVO();
-//		room2.setAdmID("admin");
-//		room2.setNo("ROOM2");
-//		room2.setId("2");
-//		room2.setOwnerID("admin");	
-//		room2.setStatus(IContent.ROOM_STATUS_INIT);
-//		this.rooms.put("ROOM2", room2);
-//		RoomVO room3 = new RoomVO();
-//		room3.setAdmID("admin");
-//		room3.setNo("ROOM3");
-//		room3.setId("3");
-//		room3.setOwnerID("admin");
-//		room3.setStatus(IContent.ROOM_STATUS_INIT);
-//		this.rooms.put("ROOM3", room3);
-//
-//	}
-	
 	public static RoomService getInstance() {
 		if(null==RoomService._ROOM) {
 			RoomService._ROOM = new RoomService();
 			_ROOM.rooms = new HashMap<String,RoomVO>();
 			RoomVO room1 = new RoomVO();
-			room1.setAdmID("admin");
+//			room1.setAdmID("admin");
 			room1.setNo("ROOM1");
 			room1.setId("1");
 			room1.setOwnerID("admin");	
 			room1.setStatus(IContent.ROOM_STATUS_INIT);
 			_ROOM.rooms.put("ROOM1", room1);
 			RoomVO room2 = new RoomVO();
-			room2.setAdmID("admin");
+//			room2.setAdmID("admin");
 			room2.setNo("ROOM2");
 			room2.setId("2");
 			room2.setOwnerID("admin");	
 			room2.setStatus(IContent.ROOM_STATUS_INIT);
 			_ROOM.rooms.put("ROOM2", room2);
 			RoomVO room3 = new RoomVO();
-			room3.setAdmID("admin");
+//			room3.setAdmID("admin");
 			room3.setNo("ROOM3");
 			room3.setId("3");
 			room3.setOwnerID("admin");
@@ -160,7 +134,7 @@ public class RoomService {
 		return gameVO;
 	}
 	public GameVO doDrawing(String roomNO,LinkedHashMap<String,Integer> resultPool, String loginID) {
-		MemberService memService = new MemberService(); 
+		UserService memService = new UserService(); 
 		RoomVO roomVO = _ROOM.rooms.get(roomNO);
 		GameVO gameVO = roomVO.getGames().get(roomVO.getGames().size()-1);
 		if(IContent.ROOM_STATUS_NORMAL.contentEquals(roomVO.getStatus())) {
@@ -173,7 +147,7 @@ public class RoomService {
 						if(resultPool.get(key)==0) {//莊贏
 							for(BetVO betVO:gameVO.getRecords().get(key)) {
 								//莊家贏的錢
-								banker_get_money += (betVO.getAmount() *100);								
+								banker_get_money += betVO.getAmount();								
 								//閒家下注紀錄賺的錢
 								betVO.setGet_money(0);
 								betVO.setResult(0);
@@ -182,36 +156,38 @@ public class RoomService {
 						}else if(resultPool.get(key)==1) {//閒贏
 							for(BetVO betVO:gameVO.getRecords().get(key)) {
 								//莊家贏的錢
-								banker_get_money += (betVO.getAmount() * -100);										
+								banker_get_money += (betVO.getAmount() * -1);										
 								//閒家下注紀錄賺的錢
 								betVO.setGet_money(betVO.getAmount()* (float)1.95);
 								betVO.setResult(1);
-								memService.plusMoney(betVO.getLoginID(), betVO.getAmount()*100 *(float)1.95);
+								memService.plusMoney(betVO.getLoginID(), betVO.getAmount() *(float)1.95);
 								loginIdSet.add(betVO.getLoginID());
 							}							
 						}else {
 							for(BetVO betVO:gameVO.getRecords().get(key)) {//平手
 								betVO.setGet_money(betVO.getAmount());
 								betVO.setResult(2);
-								memService.plusMoney(betVO.getLoginID(), betVO.getAmount()*100);
+								memService.plusMoney(betVO.getLoginID(), betVO.getAmount());
 								loginIdSet.add(betVO.getLoginID());
 							}							
 						}
-					}				
-					
+					}									
 					//新增User的下注紀錄
 					betRecordsMapper.betRecordsSave(gameVO.getId(), gameVO.getRecords());
 					
 					//更新莊家錢包
-					managerMapper.managerWalletUpdate(loginID, banker_get_money);
+					userMapper.bankerWalletUpdate(loginID, banker_get_money);
+					memService.plusMoney(loginID, banker_get_money);
+					
+					//場主更新錢包(還沒寫)
+//					managerMapper.managerWalletUpdate(loginID, banker_get_money);
 					
 					//更新User的錢包
 					HashMap<String,Float> loginIdMap = new HashMap();
 					for (String loginId : loginIdSet) {
 						userMapper.userWalletUpdate(loginId, memService.getMoney(loginId));
-//						loginIdMap.put(loginId, memService.getMoney(loginId));
+
 					}					
-//					userMapper.userWalletUpdate(loginIdMap);
 				}								
 //				List<BetVO> winnerBets = getLastBets(roomNO, winnerPool);
 //				for(BetVO bet : winnerBets) {
@@ -243,7 +219,7 @@ public class RoomService {
 	}
 	public GameVO doCloseGame(String roomNO,String winnerResult) {
 		List<GameVO> gameList = _ROOM.rooms.get(roomNO).getGames();
-		MemberService memService = new MemberService(); 
+		UserService memService = new UserService(); 
 		GameVO vo = gameList.get(gameList.size()-1);
 		vo.setResult(winnerResult);
 		List<BetVO> bets = vo.getRecords().get(winnerResult);
@@ -255,8 +231,8 @@ public class RoomService {
 		return vo;
 	}
 	public Float doBet(String loginID,String roomNO, BetVO betVO) {
-		MemberService memService = new MemberService(); 
-		UserBean mem = memService.getMemberByLoginID(loginID);
+		UserService memService = new UserService(); 
+		UserBean mem = memService.getUserByLoginID(loginID);
 		RoomVO roomVO = _ROOM.rooms.get(roomNO);
 		if(IContent.ROOM_STATUS_NORMAL.contentEquals(roomVO.getStatus())) {
 			List<GameVO> gameList = roomVO.getGames();

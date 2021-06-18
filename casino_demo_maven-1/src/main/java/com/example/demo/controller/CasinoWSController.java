@@ -12,7 +12,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import com.example.demo.IContent;
-import com.example.demo.service.MemberService;
+import com.example.demo.service.UserService;
 import com.example.demo.service.RoomService;
 import com.example.demo.service.WebSocketSessions;
 import com.example.demo.vo.BetBakMessageVO;
@@ -31,12 +31,12 @@ public class CasinoWSController {
     private SimpMessagingTemplate simpMessagingTemplate;
 	@Autowired
 	private WebSocketSessions webSocketSessions;
-	private int rate = 100;
+//	private int rate = 100;
 	
 	@MessageMapping("/casino/bet")
     public void bet(BetVO betVO,Principal principal) {
 		RoomService roomService = RoomService.getInstance();
-		MemberService memService = new MemberService();
+		UserService memService = new UserService();
 		MyPrincipal user = (MyPrincipal)principal;
 		String loginID = user.getLoginID();
 		String roomNO = betVO.getRoomNO();
@@ -46,7 +46,7 @@ public class CasinoWSController {
 		betVO.setBet_time(new Timestamp(System.currentTimeMillis()));
 		if(gameVO.getStatus().contentEquals(IContent.GAME_STATUS_BETTING)) {
 			roomService.addBet(roomNO, betVO);
-			memService.plusMoney(loginID, betVO.getAmount()*100*-1);
+			memService.plusMoney(loginID, betVO.getAmount()*-1);
 			sendBetMessage(roomNO, gameVO);				
 		}else {
 			logger.info("遊戲非在壓注狀態，而在{}", gameVO.getStatus());
@@ -65,7 +65,7 @@ public class CasinoWSController {
 	
 	@MessageMapping("/casino/getMyWalletAmount")
     public void getMyWalletAmount(Principal principal) {
-		MemberService memService = new MemberService(); 
+		UserService memService = new UserService(); 
 		MyPrincipal user = (MyPrincipal)principal;
 		String loginID = user.getLoginID();
 		float myWalletAmount = memService.getMoney(loginID);
@@ -73,7 +73,7 @@ public class CasinoWSController {
 		simpMessagingTemplate.convertAndSendToUser(loginID, "/topic/getMyWallet", respMsgVO);		
     }
 	
-	private  synchronized BetBakMessageVO convertBetBak(GameVO gameVO, int rate) {
+	private  synchronized BetBakMessageVO convertBetBak(GameVO gameVO) {
 		int totalAmount = 0;
 		BetBakMessageVO betBak = new BetBakMessageVO();
 		betBak.setRoomNO(gameVO.getRoomNO());
@@ -88,15 +88,15 @@ public class CasinoWSController {
 				amount+=bet.getAmount();
 			}
 			totalAmount+=amount;
-			betBak.putPool(poolName, String.valueOf(amount*rate));
+			betBak.putPool(poolName, String.valueOf(amount));
 		}
-		betBak.setAmount(String.valueOf(totalAmount*rate));
+		betBak.setAmount(String.valueOf(totalAmount));
 		return betBak;
 	}
 	
     public void sendBetMessage(String roomNO,GameVO gameVO) {		
 		List<String> wsSessIDs = webSocketSessions.getMems(roomNO);	
-		RespMessageVO respMsgVO = new RespMessageVO("BET_STATUS", convertBetBak(gameVO, rate));
+		RespMessageVO respMsgVO = new RespMessageVO("BET_STATUS", convertBetBak(gameVO));
 		for(String sessID:wsSessIDs) {
 			simpMessagingTemplate.convertAndSendToUser(sessID, "/topic/roomStatus", respMsgVO);
 		}

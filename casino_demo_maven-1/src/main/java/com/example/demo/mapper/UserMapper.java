@@ -9,8 +9,10 @@ public interface UserMapper{
      * @return
      */
     //遊戲結算時，更改User錢包餘額至DB。
-//    int userWalletUpdate(@Param("loginIdMap") Map<String,Float> loginIdMap);
     int userWalletUpdate(@Param("loginId") String loginId, @Param("money")float money);
+    
+    //遊戲結算時，更改莊家錢包餘額至DB。
+    int bankerWalletUpdate(@Param("loginId") String loginId, @Param("money")float money);
     
     Map<String,Object> getMemberById(String loginId);
 }
