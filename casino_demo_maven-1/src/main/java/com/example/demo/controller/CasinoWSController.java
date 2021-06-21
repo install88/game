@@ -99,6 +99,7 @@ public class CasinoWSController {
 		RespMessageVO respMsgVO = new RespMessageVO("BET_STATUS", convertBetBak(gameVO));
 		for(String sessID:wsSessIDs) {
 			simpMessagingTemplate.convertAndSendToUser(sessID, "/topic/roomStatus", respMsgVO);
+			simpMessagingTemplate.convertAndSendToUser(sessID, "/topic/getLimitAmount", gameVO.getLimit_amount());
 		}
     }	
 }

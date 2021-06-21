@@ -19,6 +19,7 @@ public class GameVO {
 	private float admin_get_money;
 	private Timestamp end_time;
 	private Integer limit_amount;
+	private float odds;
 	
 	private Map<String,List<BetVO>> records = new ConcurrentHashMap<String, List<BetVO>>();
 	
@@ -127,6 +128,10 @@ public class GameVO {
 	public void setLimit_amount(Integer limit_amount) {
 		this.limit_amount = limit_amount;
 	}
-	
-	
+	public float getOdds() {
+		return odds;
+	}
+	public void setOdds(float odds) {
+		this.odds = odds;
+	}
 }

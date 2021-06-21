@@ -7,9 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 @MapperScan("com.example.demo.*")
 public class CasinoDemoMaven1Application {
-
 	public static void main(String[] args) {
 		SpringApplication.run(CasinoDemoMaven1Application.class, args);
 	}
-
 }

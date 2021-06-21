@@ -58,6 +58,7 @@ public class MainController {
 		if(!IContent.ROOM_STATUS_NORMAL.contentEquals(roomVO.getStatus())) {
 			return "room_closed";
 		}else {
+			model.addAttribute("gameVO",roomVO.getLastGame());
 			return "room";
 		}
 	}

@@ -238,7 +238,8 @@
 	
 
 	<script>
-		var roomNO = '[[${roomVO.no}]]';
+		var roomNO = '[[${roomVO.no}]]';		
+		var limit_amount = '[[${gameVO.limit_amount}]]';
 	 	var stompClient = null;
 	 	var socket = null;	 	
 	 	var gameStatus = "";
@@ -246,51 +247,50 @@
 			//WebSocket
 	        connect();
 			$("#btnGroupA_100").click(function(e){
-				doBet(convertBet("A",100,roomNO));
+				doBet(convertBet("A",100,roomNO),limit_amount);
 				
 			});
 			$("#btnGroupA_200").click(function(e){
-				doBet(convertBet("A",200,roomNO));
+				doBet(convertBet("A",200,roomNO),limit_amount);
 				
 			});
 			
 			$("#btnGroupA_500").click(function(e){
-				doBet(convertBet("A",500,roomNO));
+				doBet(convertBet("A",500,roomNO),limit_amount);
 			});
 			
 			$("#btnGroupB_100").click(function(e){
-				doBet(convertBet("B",100,roomNO));
+				doBet(convertBet("B",100,roomNO),limit_amount);
 			});
 			$("#btnGroupB_200").click(function(e){
-				doBet(convertBet("B",200,roomNO));
+				doBet(convertBet("B",200,roomNO),limit_amount);
 			});
 			$("#btnGroupB_500").click(function(e){
-				doBet(convertBet("B",500,roomNO));
+				doBet(convertBet("B",500,roomNO),limit_amount);
 			});
 			
 			$("#btnGroupC_100").click(function(e){
-				doBet(convertBet("C",100,roomNO));
+				doBet(convertBet("C",100,roomNO),limit_amount);
 			});
 			$("#btnGroupC_200").click(function(e){
-				doBet(convertBet("C",200,roomNO));
+				doBet(convertBet("C",200,roomNO),limit_amount);
 			});
 			$("#btnGroupC_500").click(function(e){
-				doBet(convertBet("C",500,roomNO));
+				doBet(convertBet("C",500,roomNO),limit_amount);
 			});
 			
 			$("#btnGroupD_100").click(function(e){
-				doBet(convertBet("D",100,roomNO))
+				doBet(convertBet("D",100,roomNO),limit_amount)
 			});
 			$("#btnGroupD_200").click(function(e){
-				doBet(convertBet("D",200,roomNO))
+				doBet(convertBet("D",200,roomNO),limit_amount)
 			});
 			$("#btnGroupD_500").click(function(e){
-				doBet(convertBet("D",500,roomNO))
+				doBet(convertBet("D",500,roomNO),limit_amount)
 			});
 			
 		});
-		function connect() {
-			
+		function connect() {			
 	        socket = new SockJS("/ws?token=123456&roomNO="+roomNO);
 	        stompClient = Stomp.over(socket);
 	        stompClient.heartbeat.outgoing = 10000;
@@ -350,6 +350,12 @@
 	                }
 	                console.log("commplete read status!");
 	            });
+	            
+	            stompClient.subscribe('/user/topic/getLimitAmount',  function(data) {
+	                console.log("data="+data);
+	                var jsonObj = $.parseJSON(data.body);
+	                limit_amount = jsonObj;
+	            });	            
 	       
 	            stompClient.subscribe('/user/topic/getMyWallet',  function(data) {
 	                console.log("data="+data);
@@ -373,7 +379,7 @@
 	        }
 	        console.log("Disconnected");
 	    }
-	    function doBet(msg) {
+	    function doBet(msg,limit_amount) {
 	    	var bet_msg = JSON.parse(msg);
 	    	if("BETTING" == gameStatus){
 	    		var total_amount = parseInt($("#amount").text());
@@ -384,7 +390,7 @@
 	    			return
 	    		}
 	    			    		
-	    		if(total_amount + bet_amount <= 3000){
+	    		if(total_amount + bet_amount <= limit_amount){
 	    			stompClient.send("/app/casino/bet", {}, msg);	
 	    		}else{
 	    			alert("目前已超過下注上限！");

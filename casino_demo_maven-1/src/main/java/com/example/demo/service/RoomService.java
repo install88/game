@@ -69,21 +69,25 @@ public class RoomService {
 	public RoomVO getRoom(String roomNO) {
 		return this.rooms.get(roomNO);
 	}
-	public GameVO initRoom(String roomNO, String loginID) {		
+	public GameVO initRoom(String roomNO, String loginID, LinkedHashMap<String,Float> resultMap) {		
 		_ROOM.rooms.get(roomNO).setGames(new ArrayList<GameVO>());
 		_ROOM.rooms.get(roomNO).setStatus(IContent.ROOM_STATUS_NORMAL);
-		GameVO  game = doCreateGame(roomNO, loginID);
+		GameVO  game = doCreateGame(roomNO, loginID, resultMap);
 		return game;
 	}
 	public void closeRoom(String roomNO) {
 		_ROOM.rooms.get(roomNO).setStatus(IContent.ROOM_STATUS_CLOSE);
 	}
-	public GameVO doCreateGame(String roomNO, String loginID) {
+	public GameVO doCreateGame(String roomNO, String loginID, LinkedHashMap<String,Float> resultMap) {
 		List<GameVO> gameList = _ROOM.rooms.get(roomNO).getGames();
 		GameVO game = new GameVO();
 //		game.setId(gameList.size()+1);	
 		game.setRoom_id(Integer.valueOf(roomNO.substring(roomNO.length()-1)));
-		game.setBanker(loginID);
+		game.setBanker(loginID);				
+		float temp_amount = resultMap.get("limit_amount");
+		int limit_amount = (int) temp_amount;
+		game.setLimit_amount(limit_amount);
+		game.setOdds(resultMap.get("odds"));
 		gameRecordsMapper.gameRecordsSave(game);						
 		game.setRoomNO(roomNO);
 		game.setStatus(IContent.GAME_STATUS_INIT);
@@ -93,7 +97,7 @@ public class RoomService {
 		table.put("C", new ArrayList<BetVO>());
 		table.put("D", new ArrayList<BetVO>());
 		game.setRecords(table);
-		game.setLimit_amount(3000);
+		
 		_ROOM.rooms.get(roomNO).addGame(game);
 		return game;
 	}
@@ -142,7 +146,9 @@ public class RoomService {
 					//紀錄莊家賺的錢
 					float banker_get_money = 0;					
 					//紀錄場主得到的水錢
-					float manager_get_money = 0;
+					float manager_get_money = 0;					
+					//該場遊戲的賠率
+					float odds = gameVO.getOdds();
 
 					for(String key : resultPool.keySet()) {
 						if(resultPool.get(key)==0) {//莊贏
@@ -161,9 +167,9 @@ public class RoomService {
 								//場主得到的水錢
 								manager_get_money += (betVO.getAmount() * 0.05);								
 								//閒家下注紀錄賺的錢
-								betVO.setGet_money(betVO.getAmount()* (float)1.95);							
+								betVO.setGet_money(betVO.getAmount()* odds);							
 								betVO.setResult(1);
-								memService.plusMoney(betVO.getLoginID(), betVO.getAmount() *(float)1.95);
+								memService.plusMoney(betVO.getLoginID(), betVO.getAmount() * odds);
 								loginIdSet.add(betVO.getLoginID());
 							}							
 						}else {
@@ -213,6 +219,7 @@ public class RoomService {
 		if(IContent.ROOM_STATUS_NORMAL.contentEquals(roomVO.getStatus())) {
 			if(IContent.GAME_STATUS_DRAWING.contentEquals(gameVO.getStatus())) {
 				gameVO.setStatus(IContent.GAME_STATUS_CLOSE);
+//				room1.setStatus(IContent.ROOM_STATUS_INIT);
 			}
 		}
 		return gameVO;

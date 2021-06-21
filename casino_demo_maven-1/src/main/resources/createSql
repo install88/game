@@ -5,7 +5,7 @@ CREATE TABLE `manager` (
   `account` varchar(100) NOT NULL,
   `password` varchar(100) NOT NULL,
   `name` varchar(100) DEFAULT NULL,
-  `wallet` int(11) NOT NULL,
+  `wallet` float NOT NULL,
   PRIMARY KEY (`m_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='管理者';
 
@@ -39,15 +39,20 @@ CREATE TABLE `room` (
 CREATE TABLE `game_records` (
   `game_records_id` int(11) NOT NULL AUTO_INCREMENT,
   `room_id` int(11) DEFAULT NULL,
+  `banker` varchar(100) DEFAULT NULL COMMENT '莊家',
   `create_time` timestamp NOT NULL DEFAULT current_timestamp(),
   `bet_start_time` timestamp NULL DEFAULT NULL,
   `bet_end_time` timestamp NULL DEFAULT NULL,
-  `admin_get_money` float DEFAULT NULL,
+  `banker_get_money` float DEFAULT NULL,
   `end_time` timestamp NULL DEFAULT NULL,
+  `odds` float DEFAULT NULL COMMENT '賠率',  
+  `limit_amount` int(11) DEFAULT NULL COMMENT '限制金額',
   PRIMARY KEY (`game_records_id`),
   KEY `game_records_FK` (`room_id`),
-  CONSTRAINT `game_records_FK` FOREIGN KEY (`room_id`) REFERENCES `room` (`room_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8 COMMENT='建立遊戲紀錄';
+  KEY `game_records_FK_1` (`banker`),
+  CONSTRAINT `game_records_FK` FOREIGN KEY (`room_id`) REFERENCES `room` (`room_id`),
+  CONSTRAINT `game_records_FK_1` FOREIGN KEY (`banker`) REFERENCES `user` (`account`)
+) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8 COMMENT='建立遊戲紀錄';
 
 
 -- test_game.games definition
@@ -92,4 +97,4 @@ CREATE TABLE `bet_records` (
   KEY `bet_records_FK_1` (`user_account`),
   CONSTRAINT `bet_records_FK` FOREIGN KEY (`game_records_id`) REFERENCES `game_records` (`game_records_id`),
   CONSTRAINT `bet_records_FK_1` FOREIGN KEY (`user_account`) REFERENCES `user` (`account`)
-) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8 COMMENT='下注紀錄';
+) ENGINE=InnoDB AUTO_INCREMENT=197 DEFAULT CHARSET=utf8 COMMENT='下注紀錄';

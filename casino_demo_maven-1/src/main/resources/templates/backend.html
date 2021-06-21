@@ -64,9 +64,19 @@
 					</div>
 				</div>
 				<div class="col-sm-2" th:switch="${roomVO?.status}">
-					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'INIT'" onclick="javascript:initRoom();">初始化房間</button>
+					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'INIT'" onclick="javascript:initRoom();">初始化房間</button>				
 					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'NORMAL'" onclick="javascript:closeRoom();">關閉房間</button>
 				</div>
+				<div class="col-sm-2" th:switch="${roomVO?.status}">
+					<div th:case="'INIT'">
+						賠率<input type="number" id="odds"/>
+					</div>														
+				</div>		
+				<div class="col-sm-2" th:switch="${roomVO?.status}">
+					<div th:case="'INIT'">
+						限制額度<input type="number" id="limit_amount"/>
+					</div>														
+				</div>							
 			</div><!--.row-->
 			
 			<div class="row" th:if="${gameVO} != null and ${roomVO.status != 'INIT'}">
@@ -84,7 +94,7 @@
 					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'INIT'" onclick='javascript:runGame();'>開始主持人發牌</button>
 					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'RUNNING'" onclick='javascript:startBetting();'>開始下注</button>
 					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'BETTING'" onclick='javascript:stopBetting();'>停止押注與進行開獎</button>
-					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'CLOSE'" onclick='javascript:createNewGame();'>進行下一場</button>
+					<button type="button" class="btn btn-inline btn-primary-outline" th:case="'CLOSE'" onclick='javascript:closeRoom();'>進行下一場</button>
 				</div>
 			</div><!--.row-->
 			<div class="row">
@@ -262,11 +272,26 @@
 	        console.log("Disconnected");
 	    }
 	    function initRoom(){
+	    	var odds = $("#odds").val();
+	    	var limit_amount = $("#limit_amount").val();
+	    	if(odds.length == 0){
+	    		alert("請填寫賠率");
+	    		return
+	    	}	    	
+	    	if(limit_amount.length == 0){
+	    		alert("請填寫限制金額");
+	    		return
+	    	}	    		    	
+			data = {
+					"odds": odds,
+					"limit_amount": limit_amount
+					}		    	
 	    	$.ajax({
 				async:true,
 				type: 'PUT',
+				contentType : 'application/json;charset=utf-8',
 				url: '/api/casino/v1/initRoom/'+roomNO,
-				data: {},
+				data: JSON.stringify(data),
 				success: function(jObj,status){
 					if("000"==jObj.RETCODE){
 						result = jObj.RET;
@@ -324,27 +349,27 @@
 			});
 	    }
 	    
-	    function createNewGame(){
-	    	$.ajax({
-				async:true,
-				type: 'PUT',
-				url: '/api/casino/v1/createNewGame/'+roomNO,
-				data: {},
-				success: function(jObj,status){
-					if("000"==jObj.RETCODE){
-						result = jObj.RET;
-						getRoomStatus();
-						location.reload();
-					}else{
-						alert("錯誤！errorCode:"+jObj.RETCODE);
-						console.log(jOb.MSG);
-					}
-				},
-				error:function(res){
-					console.log(res);
-				}
-			});
-	    }
+// 	    function createNewGame(){
+// 	    	$.ajax({
+// 				async:true,
+// 				type: 'PUT',
+// 				url: '/api/casino/v1/createNewGame/'+roomNO,
+// 				data: {},
+// 				success: function(jObj,status){
+// 					if("000"==jObj.RETCODE){
+// 						result = jObj.RET;
+// 						getRoomStatus();
+// 						location.reload();
+// 					}else{
+// 						alert("錯誤！errorCode:"+jObj.RETCODE);
+// 						console.log(jOb.MSG);
+// 					}
+// 				},
+// 				error:function(res){
+// 					console.log(res);
+// 				}
+// 			});
+// 	    }
 	    function stopBetting(){
 	    	$.ajax({
 				async:true,
