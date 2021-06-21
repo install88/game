@@ -4,6 +4,6 @@
 	<update id="managerWalletUpdate">  
 	        update manager
 	        set wallet= wallet +#{money}
-	        where account = #{loginID}
+	        where account = #{admin}
 	</update>	
 </mapper>

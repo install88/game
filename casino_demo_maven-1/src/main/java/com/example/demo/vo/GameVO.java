@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameVO {
 	private Integer id;
 	private Integer room_id;
+	private String banker;
 	private String roomNO;
 	private String result;
 	private String status;
@@ -33,6 +34,14 @@ public class GameVO {
 	public void setRoomNO(String roomNO) {
 		this.roomNO = roomNO;
 	}
+	
+	public String getBanker() {
+		return banker;
+	}
+	public void setBanker(String banker) {
+		this.banker = banker;
+	}
+
 	public String getResult() {
 		return result;
 	}

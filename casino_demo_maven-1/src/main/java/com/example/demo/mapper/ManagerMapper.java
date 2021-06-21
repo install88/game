@@ -8,5 +8,5 @@ public interface ManagerMapper{
      * @return
      */
     //遊戲結算時，更改User錢包餘額至DB。
-    int managerWalletUpdate(@Param("loginID") String loginID, @Param("money")float money);    
+    int managerWalletUpdate(@Param("admin") String admin, @Param("money")float money);    
 }

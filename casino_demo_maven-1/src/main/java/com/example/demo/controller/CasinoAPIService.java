@@ -54,7 +54,7 @@ public class CasinoAPIService {
 		result.put("RETCODE", "999");
 		result.put("RET", false);
 		if(roomVO.getAdmID().contentEquals(loginID)) {
-			GameVO vo = roomService2.initRoom(roomNO);
+			GameVO vo = roomService2.initRoom(roomNO, loginID);
 			if(null!=vo) {
 				result.put("RETCODE", "000");
 				result.put("RET", true);
@@ -241,7 +241,7 @@ public class CasinoAPIService {
 			if(!roomVO.getAdmID().contentEquals(loginID)) {
 				errMsg.add("權限不足，執行者與房間管理者不相同！");
 			}else {
-				GameVO gameVO = roomService2.doCreateGame(roomNO);				
+				GameVO gameVO = roomService2.doCreateGame(roomNO, loginID);				
 			}
 			
 		}

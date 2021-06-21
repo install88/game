@@ -15,5 +15,7 @@ public interface IContent {
 	public final static String WS_SESS_ROOM_NO_KEY = "roomNO";
 	public final static String WS_SESS_LOGINID_KEY = "loginID";
 	public final static String WS_SESS_HSESSID_KEY = "httpSessionID";
+	
+	public final static String ADMIN = "admin";
 }
 
