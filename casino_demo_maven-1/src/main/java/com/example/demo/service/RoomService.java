@@ -191,7 +191,7 @@ public class RoomService {
 					//更新遊戲紀錄(莊家這輪賺的錢)
 					gameRecordsMapper.gameRecordsUpdateBankerGetMoney(gameVO.getId(), banker_get_money);
 					
-					//場主更新錢包(還沒寫)
+					//場主更新錢包
 					managerMapper.managerWalletUpdate(IContent.ADMIN, manager_get_money);
 					
 					//更新User的錢包
