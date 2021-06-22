@@ -153,7 +153,7 @@ public class RoomService {
 					for(String key : resultPool.keySet()) {
 						if(resultPool.get(key)==0) {//莊贏
 							for(BetVO betVO:gameVO.getRecords().get(key)) {
-								//莊家贏的錢
+								//加總莊家贏的錢
 								banker_get_money += betVO.getAmount();								
 								//閒家下注紀錄賺的錢
 								betVO.setGet_money(0);
@@ -162,10 +162,10 @@ public class RoomService {
 							}
 						}else if(resultPool.get(key)==1) {//閒贏
 							for(BetVO betVO:gameVO.getRecords().get(key)) {
-								//莊家贏的錢
-								banker_get_money += (betVO.getAmount() * -1);								
-								//場主得到的水錢
-								manager_get_money += (betVO.getAmount() * 0.05);								
+								//加總莊家贏的錢
+								banker_get_money += (betVO.getAmount() * (1 - odds));								
+								//加總場主得到的水錢
+								manager_get_money += (betVO.getAmount() * (odds - 1) * 0.05);								
 								//閒家下注紀錄賺的錢
 								betVO.setGet_money(betVO.getAmount()* odds);							
 								betVO.setResult(1);

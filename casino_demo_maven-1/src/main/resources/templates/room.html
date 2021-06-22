@@ -317,6 +317,7 @@
 	                console.log("data="+data);
 	            	var jsonObj = $.parseJSON(data.body);
 	            	var payload = jsonObj.payload;
+	            	limit_amount = payload.limit_amount;
             		var poolMap = payload.poolMap;
             		$("#amount").text(payload.amount);
 	                $("#amount_a").text(poolMap["A"]);
@@ -350,13 +351,7 @@
 	                }
 	                console.log("commplete read status!");
 	            });
-	            
-	            stompClient.subscribe('/user/topic/getLimitAmount',  function(data) {
-	                console.log("data="+data);
-	                var jsonObj = $.parseJSON(data.body);
-	                limit_amount = jsonObj;
-	            });	            
-	       
+	                             
 	            stompClient.subscribe('/user/topic/getMyWallet',  function(data) {
 	                console.log("data="+data);
 	                var jsonObj = $.parseJSON(data.body);

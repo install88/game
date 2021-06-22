@@ -8,6 +8,7 @@ public class BetBakMessageVO {
 	private String message;
 	private String amount;
 	private String gameStatus;
+	private Integer limit_amount;
 	private Map<String,String> poolMap = new ConcurrentHashMap<String,String>();
 	public BetBakMessageVO() {
 		
@@ -53,6 +54,12 @@ public class BetBakMessageVO {
 	}
 	public void setGameStatus(String gameStatus) {
 		this.gameStatus = gameStatus;
+	}
+	public Integer getLimit_amount() {
+		return limit_amount;
+	}
+	public void setLimit_amount(Integer limit_amount) {
+		this.limit_amount = limit_amount;
 	}
 	
 }

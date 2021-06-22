@@ -19,6 +19,4 @@ public class RespMessageVO {
 	public void setPayload(Object payload) {
 		this.payload = payload;
 	}
-	
-	
 }

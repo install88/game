@@ -78,6 +78,7 @@ public class CasinoWSController {
 		BetBakMessageVO betBak = new BetBakMessageVO();
 		betBak.setRoomNO(gameVO.getRoomNO());
 		betBak.setGameStatus(gameVO.getStatus());
+		betBak.setLimit_amount(gameVO.getLimit_amount());
 		Map<String, List<BetVO>> records = gameVO.getRecords();
 		Iterator<String> keyIter = records.keySet().iterator();
 		while(keyIter.hasNext()) {
@@ -99,7 +100,6 @@ public class CasinoWSController {
 		RespMessageVO respMsgVO = new RespMessageVO("BET_STATUS", convertBetBak(gameVO));
 		for(String sessID:wsSessIDs) {
 			simpMessagingTemplate.convertAndSendToUser(sessID, "/topic/roomStatus", respMsgVO);
-			simpMessagingTemplate.convertAndSendToUser(sessID, "/topic/getLimitAmount", gameVO.getLimit_amount());
 		}
     }	
 }
