@@ -1,0 +1,86 @@
+<html>
+<head>
+    <title>視頻聊天</title>
+    <meta charset="utf-8">
+    <script src="js/peer.js"></script>
+    <script src="js/jquery.min.js"></script>
+</head>
+<body>
+	<h3>本地視頻</h3>
+	<video id="localVideo" style="width: 400px;height: 300px;"></video>
+	<div style="text-align: left">
+	    自己ID<input type="text" id="myPeerid"/>（自動獲取）
+	    對方ID<input type="text" id="youPeerid"/>（請手動輸入）
+	    <button id="callBtn">聊天</button>
+	</div>
+	<h3>遠程視頻</h3>
+	<video id="remoteVideo" style="width: 400px;height: 300px;"></video>
+
+	<script type="text/javascript">
+	    //訪問用戶媒體設備的兼容方法
+	    function getUserMedia(constrains,success,error){
+	        if(navigator.mediaDevices.getUserMedia){
+	            //最新標準API
+	            navigator.mediaDevices.getUserMedia(constrains).then(success).catch(error);
+	        } else if (navigator.webkitGetUserMedia){
+	            //webkit內核瀏覽器
+	            navigator.webkitGetUserMedia(constrains).then(success).catch(error);
+	        } else if (navigator.mozGetUserMedia){
+	            //Firefox瀏覽器
+	            navagator.mozGetUserMedia(constrains).then(success).catch(error);
+	        } else if (navigator.getUserMedia){
+	            //舊版API
+	            navigator.getUserMedia(constrains).then(success).catch(error);
+	        }
+	    }
+	    
+	    var localVideo = document.querySelector('video#localVideo');
+	    var remoteVideo = document.querySelector('video#remoteVideo');
+	    var localStream=null;
+	    $(function(){
+	        getUserMedia({video: false, audio: true}, function(stream) {
+	            localStream=stream;
+	            localVideo.srcObject = stream;
+	            localVideo.autoplay = true;
+	            localVideo.play();
+	        }, function(err) {
+	            console.log('Failed to get local stream' ,err);
+	        });
+	
+	        var peer = new Peer();
+	        peer.on('open', function(id) {
+	            $("#myPeerid").val(id);
+	        });
+	        peer.on('call', function(call) {
+	            call.answer(localStream);
+	            call.on('stream', function(remoteStream) {
+	                console.log(remoteStream);
+	                remoteVideo.srcObject = remoteStream;
+	                remoteVideo.autoplay = true;
+	            });
+	        });
+	        $('#callBtn').click(function(){
+	            var remoteId=$("#youPeerid").val();
+	            if(remoteId==""){
+	                alert("請輸入對方ID");return;
+	            }
+	
+	            var call = peer.call(remoteId,localStream);
+	            call.on('stream', function(remoteStream) {
+	                console.log(remoteStream);
+	                remoteVideo.srcObject = remoteStream;
+	                remoteVideo.autoplay = true;
+	            });
+	            call.on('close', function() {
+	                console.log("call close");
+	                _this.loading.close();
+	            });
+	            call.on('error', function(err) {
+	                console.log(err);
+	                _this.loading.close();
+	            });
+	        });
+	    });
+	</script>
+</body>
+</html>

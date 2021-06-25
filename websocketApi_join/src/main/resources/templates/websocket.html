@@ -6,6 +6,7 @@
     <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script>
     <script src="http://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     
     <style>		
 		.outer-container,.content {
@@ -60,7 +61,7 @@
 	        </div>
 	     </div>
 	 </div>		
-	
+	<video id="remoteVideo" style="width: 400px;height: 300px;"></video>
 	<input type="text" th:value="${username}" id="username" style="display: none"/>
 </body>
 
@@ -68,12 +69,120 @@
 <script type="text/javascript">
 	let userMap= new Map();
 	const userName = document.getElementById('username').value;
-    var webSocket;
-    var commWebSocket;
+    var remoteVideo = document.querySelector('video#remoteVideo');
+	var webSocket;
+	var commWebSocket;
+	
+	let localStream;
+
+	var peer;
+	//使用Google的stun服务器
+	var configuration = { "iceServers": [{ "url": "stun:stun.example.org" }] };
+	
+	//兼容浏览器的getUserMedia写法
+	var getUserMedia = (navigator.getUserMedia ||
+	                    navigator.webkitGetUserMedia || 
+	                    navigator.mozGetUserMedia || 
+	                    navigator.msGetUserMedia);
+	//兼容浏览器的PeerConnection写法
+	var PeerConnection = (window.PeerConnection ||
+	                    window.webkitPeerConnection00 || 
+	                    window.webkitRTCPeerConnection || 
+	                    window.mozRTCPeerConnection);
+
+	function start(){
+		// get a local stream, show it in a self-view and add it to be sent
+		var constraints = { "audio": true, "video": false };
+		navigator.mediaDevices.getUserMedia(constraints)
+		.then(function(stream) {
+			console.log("navigator~~~");
+			peer = new RTCPeerConnection(configuration);
+			peer.addStream(stream);
+			peer.onaddstream = function(streamEvent){
+				console.log("onaddstream~~~~~~~~~~~~~~~~~~~~~");
+// 				remoteVideo.src = URL.createObjectURL(streamEvent.stream);
+				remoteVideo.srcObject = streamEvent.stream;
+				remoteVideo.volume = 0.2;
+				remoteVideo.controls = true;
+				remoteVideo.autoplay = true;
+			};		
+			localStream = stream;
+// 			localStream.getTracks().forEach((track) => peer.addTrack(track, localStream));
+			//發送端處理offer
+			peer.createOffer().then(offer => {
+				console.log("createOffer~~~~~~~~~~~");
+				var targetUser = $("#onLineUser").val();
+				var rtc_user = {"msg_type" : "sendOffer","targetUser": targetUser,"originUser":userName, "offerSDP" : offer};			
+			    peer.setLocalDescription(offer);
+			    webSocket.send(JSON.stringify(rtc_user));
+			});
+					
+			peer.onicecandidate = function(event){
+				console.log("333333333333333");
+				console.log("onicecandidate~~~~");
+				var candidate = event.candidate;
+				if(candidate){
+					var targetUser = $("#onLineUser").val();
+					var rtc_user = {"msg_type" : "sendCandidate","targetUser": targetUser,"originUser":userName, "candidate" : event.candidate};
+					webSocket.send(JSON.stringify(rtc_user));	
+				}
+			};									
+		})
+		.catch(function(err) {
+		  /* 处理error */
+		});				
+// 		console.log(pc);
+		// 當有任何 ICE candidates 可用時，
+		// 透過 signalingChannel 將 candidate 傳送給對方
+// 		pc.onicecandidate = function (evt) {
+// 			console.log("onicecandidate~~~");
+// 			if(evt.candidate){
+// 				console.log("onicecandidate進入判斷~~~");
+// 				webSocket.send(JSON.stringify({ "candidate": evt.candidate }));	
+// 			}					  	
+// 		};
+
+		// let the "negotiationneeded" event trigger offer generation
+// 		pc.onnegotiationneeded = function () {
+// 			console.log("onnegotiationneeded~~~");
+// 			pc.createOffer(localDescCreated, logError);
+// 		}
+
+		// once remote stream arrives, show it in the remote video element
+// 		pc.onaddstream = function(obj) {
+// 			console.log("onaddstream進來了~~~~");
+// 			var video = document.createElement("video");
+
+// // 			document.appendChild(video);
+			
+// 			if ('srcObject' in video) {
+// 				  video.srcObject = obj.stream;
+// 				} else {
+// 				  // Avoid using this in new browsers, as it is going away.
+// 				  video.src = URL.createObjectURL(obj.stream);
+// 				}			
+// // 			audio.srcObject = obj.stream;
+// 			console.log(obj.stream);
+// 			console.log(video);
+// 		}
+
+  
+	}
+	
+// 	function localDescCreated(desc) {
+// 		pc.setLocalDescription(desc, function () {
+// 			webSocket.send(JSON.stringify({ "sdp": pc.localDescription }));
+// 		}, logError);
+// 	}
+	
+	function logError(){
+		
+	}
+	
     if ("WebSocket" in window) {
     	//ws://localhost:8080/websocket/{memID}
         webSocket = new WebSocket("ws://localhost:8080/websocket/" + userName);
-
+        
         //連通之後觸發
         webSocket.onopen = function () {
 //             console.log("已經連通了websocket");
@@ -81,9 +190,23 @@
 
 		//接收後端sever發送的消息
         webSocket.onmessage = function (evt) {
+			console.log(evt);
+//         	if(!peer){
+//         		console.log("要進入start");
+//         		start();
+//         	}        		    			
             var received_msg = evt.data;                    
             console.log("數據已接收:" + received_msg);
             var obj = JSON.parse(received_msg);
+            
+    	    //如果是一个ICE的候选，则将其加入到PeerConnection中，否则设定对方的session描述为传递过来的描述
+//     	    if( obj.event === "__ice_candidate" ){
+//     	    	console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~有candidate");
+//     	        pc.addIceCandidate(new RTCIceCandidate(obj.data.candidate));
+//     	    } else {
+//     	         pc.setRemoteDescription(new RTCSessionDescription(obj.data.sdp));
+//     	    }
+    	    
             var msg_type = Object.keys(obj)[0];
             console.log("msg_type=" + msg_type);
             switch(msg_type){
@@ -155,7 +278,34 @@
 				case "broadcast"://接收廣播訊息。
 	            	var msg_content = obj[msg_type];
 	            	setMessageInnerHTML(msg_content);
-                	break;                 	
+                	break;    
+				case "sendOffer"://接收offer。
+	            	var offerJson = obj[msg_type];
+	            	createAnswer(offerJson);
+// 	            	setMessageInnerHTML(msg_content);
+                	break;  
+				case "sendCandidate"://接收candidate。
+	            	var candidateJson = obj[msg_type];
+	    			if(!peer){
+	    				console.log("原本沒有peer");
+	    				console.log(candidateJson.candidate);
+	    				peer = new RTCPeerConnection(configuration);	
+// 	    				peer.addIceCandidate(new RTCIceCandidate(candidateJson.candidate));
+	    				peer.addIceCandidate(candidateJson.candidate);
+	    			}else{
+	    				console.log("有peer");
+	    				console.log(candidateJson.candidate);
+	    				peer.addIceCandidate(candidateJson.candidate);
+	    			}						            	
+// 	            	setMessageInnerHTML(msg_content);
+                	break;
+				case "sendAnswer"://接收candidate。
+	            	var answerJson = obj[msg_type];
+	    			const answerSDP = new RTCSessionDescription(answerJson.answerSDP);
+	    			peer.setRemoteDescription(answerSDP);				
+// 	            	setMessageInnerHTML(msg_content);
+                	break;                	
+                	                	
 				default://取得關鍵字搜尋筆數(msg_type=showKeyword)
 					let keywordMap= new Map();
 					obj[msg_type].forEach(function(msgVO){
@@ -182,6 +332,54 @@
         //直接關閉websocket的連接
         webSocket.close();
     }
+    
+    function createAnswer(offerJson){
+		// get a local stream, show it in a self-view and add it to be sent
+		var constraints = { "audio": true, "video": false };
+		navigator.mediaDevices.getUserMedia(constraints)
+		.then(function(stream) {
+			console.log("navigator_offerSDP~~~");
+			if(!peer){
+				peer = new RTCPeerConnection(configuration);	
+			}			
+			peer.addStream(stream);
+			peer.onaddstream = function(streamEvent){
+				console.log("onaddstream~~~~~~~~~~~~~~~~~~~~~");
+// 				remoteVideo.src = URL.createObjectURL(streamEvent.stream);
+				remoteVideo.srcObject = streamEvent.stream;
+				remoteVideo.volume = 0.2;
+				remoteVideo.controls = true;
+				remoteVideo.autoplay = true;				
+			};		
+// 			peer.ontrack = gotRemoteStream;
+			
+			
+			const SDP = new RTCSessionDescription(offerJson.offerSDP);
+			peer.setRemoteDescription(SDP);
+			//發送端處理offer
+			peer.createAnswer().then(answerSDP => {
+				console.log("createAnswer~~~~~~~~~~~");
+				var targetUser = offerJson.originUser;
+				var rtc_user = {"msg_type" : "sendAnswer","targetUser": targetUser,"originUser":userName,"answerSDP" : answerSDP};			
+			    peer.setLocalDescription(answerSDP);
+			    webSocket.send(JSON.stringify(rtc_user));
+			});
+					
+			peer.onicecandidate = function(event){
+				console.log("44444444444444");
+				console.log("answer_onicecandidate~~~~");
+				var candidate = event.candidate;
+				if(candidate){
+					var targetUser = offerJson.originUser;
+					var rtc_user = {"msg_type" : "sendCandidate","targetUser": targetUser,"originUser":userName,"candidate" : event.candidate};
+					webSocket.send(JSON.stringify(rtc_user));	
+				}
+			};									
+		})
+		.catch(function(err) {
+		  /* 处理error */
+		});				
+	}
 
     //點擊發送按鈕送出訊息
     function send() {
@@ -236,6 +434,12 @@
         document.getElementById('inner-container').scrollTop = target_top;                    
     }      
     
+	function gotRemoteStream(e) {
+		  if (remoteVideo.srcObject !== e.streams[0]) {
+		    remoteVideo.srcObject = e.streams[0];
+		    console.log("pc2 received remote stream");
+		  }
+		}    
     //當選取清單變動時，查詢與該User的聊天紀錄      
     $(document).ready(function(){
         $("#onLineUser").change(function(){
@@ -251,9 +455,9 @@
             //將未讀訊息數量改成0
             if(userMap.has(msg_from)){
             	userMap.set(msg_from,0);	
-            }            
+            } 
+            start();
         });
-    });    
+    });  
 </script>
-
 </html>

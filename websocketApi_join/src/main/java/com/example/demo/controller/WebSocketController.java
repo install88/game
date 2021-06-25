@@ -47,6 +47,9 @@ public class WebSocketController {
 	private final String SHOWRECORD = "showRecord";
 	private final String SHOWKEYWORD = "showKeyword";
 	private final String BROADCAST = "broadcast";
+	private final String SENDOFFER = "sendOffer";
+	private final String SENDANSWER = "sendAnswer";
+	private final String SENDCANDIDATE = "sendCandidate";
 	
 	/**
      * 在線人數
@@ -193,6 +196,27 @@ public class WebSocketController {
                     msg_broadcast_map.put(BROADCAST, jsonObject.getString("msg_content"));
             		sendMessageAll(JSON.toJSONString(msg_broadcast_map));
             		break;
+            	case SENDOFFER:
+                    Map<String, Object> msg_offer_map = new HashMap<>();
+//                    msg_offer_map.put(SENDOFFER, jsonObject.getString("offerSDP"));
+                    msg_offer_map.put(SENDOFFER, jsonObject);
+            		sendMessageTo(JSON.toJSONString(msg_offer_map), jsonObject.getString("targetUser"));
+            		System.out.println("SENDOFFER");
+            		break;            		
+            	case SENDCANDIDATE:
+                    Map<String, Object> msg_candidate_map = new HashMap<>();
+//                    msg_candidate_map.put(SENDCANDIDATE, jsonObject.getString("candidate"));
+                    msg_candidate_map.put(SENDCANDIDATE, jsonObject);
+            		sendMessageTo(JSON.toJSONString(msg_candidate_map), jsonObject.getString("targetUser"));            		
+            		System.out.println("SENDCANDIDATE");
+            		break;   
+            	case SENDANSWER:
+                    Map<String, Object> msg_answer_map = new HashMap<>();
+//                    msg_candidate_map.put(SENDCANDIDATE, jsonObject.getString("candidate"));
+                    msg_answer_map.put(SENDANSWER, jsonObject);
+            		sendMessageTo(JSON.toJSONString(msg_answer_map), jsonObject.getString("targetUser"));            		
+            		System.out.println("SENDANSWER");
+            		break;               		            		            		
                 default://令訊息狀態改為已讀          	                    
                     msgService.msgUpdateStatus(jsonObject.getString("msg_from"), jsonObject.getString("msg_to")); 
                     break;
