@@ -21,6 +21,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,10 @@ public class WebSocketController {
 	private final String BROADCAST = "broadcast";
 	private final String SENDOFFER = "sendOffer";
 	private final String SENDANSWER = "sendAnswer";
+	private final String STORECANDIDATE = "storeCandidate";
 	private final String SENDCANDIDATE = "sendCandidate";
+	
+	
 	
 	/**
      * 在線人數
@@ -59,6 +63,8 @@ public class WebSocketController {
      * 以User姓名为key，將WebSocket為對象保存起来
      */
     private static Map<String, WebSocketController> clients = new ConcurrentHashMap<String, WebSocketController>();
+    
+    private static Map<String, ArrayList<Map<String, Object>>> clients_candidates = new ConcurrentHashMap<String, ArrayList<Map<String, Object>>>();
     /**
      * 儲存session
      */
@@ -203,20 +209,59 @@ public class WebSocketController {
             		sendMessageTo(JSON.toJSONString(msg_offer_map), jsonObject.getString("targetUser"));
             		System.out.println("SENDOFFER");
             		break;            		
-            	case SENDCANDIDATE:
+            	case STORECANDIDATE:
                     Map<String, Object> msg_candidate_map = new HashMap<>();
-//                    msg_candidate_map.put(SENDCANDIDATE, jsonObject.getString("candidate"));
                     msg_candidate_map.put(SENDCANDIDATE, jsonObject);
-            		sendMessageTo(JSON.toJSONString(msg_candidate_map), jsonObject.getString("targetUser"));            		
+                    if(null != clients_candidates.get(jsonObject.getString("originUser"))) {
+//                    	clients_candidates.get((jsonObject.getString("originUser")).
+                    	clients_candidates.get(jsonObject.get("originUser")).add(msg_candidate_map);
+                    }else {
+                    	ArrayList<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+                    	list.add(msg_candidate_map);
+                    	clients_candidates.put((String) jsonObject.get("originUser"), list);
+                    }            		
             		System.out.println("SENDCANDIDATE");
             		break;   
             	case SENDANSWER:
                     Map<String, Object> msg_answer_map = new HashMap<>();
-//                    msg_candidate_map.put(SENDCANDIDATE, jsonObject.getString("candidate"));
                     msg_answer_map.put(SENDANSWER, jsonObject);
             		sendMessageTo(JSON.toJSONString(msg_answer_map), jsonObject.getString("targetUser"));            		
             		System.out.println("SENDANSWER");
-            		break;               		            		            		
+            		break;     
+            	case SENDCANDIDATE:
+            		ArrayList<Map<String, Object>> origin_cadidate_map_list = clients_candidates.get(jsonObject.get("originUser"));
+            		String targetUser = null;
+            		for(Map<String, Object> origin_map:origin_cadidate_map_list) {
+            			JSONObject origin_json = (JSONObject) origin_map.get(SENDCANDIDATE);
+            			sendMessageTo(JSON.toJSONString(origin_map), origin_json.getString("targetUser"));
+            			targetUser = origin_json.getString("targetUser");
+            			//刪除target_cadidate
+//            			try {
+//                			ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(origin_json.getString("targetUser"));
+//                			for(Map<String, Object> target_map:target_cadidate_map_list) {
+//                				JSONObject target_json = (JSONObject) target_map.get(SENDCANDIDATE);
+//                				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
+////                				target_cadidate_map_list.remove(target_map);
+//                			}            				
+//            			}catch(Exception e) {
+//            				System.out.println(e.getMessage());
+//            			}
+
+            		
+            			//刪除origin_cadidate
+//            			origin_cadidate_map_list.remove(origin_map);
+            		}
+            		ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(targetUser);
+        			for(Map<String, Object> target_map:target_cadidate_map_list) {
+	    				JSONObject target_json = (JSONObject) target_map.get(SENDCANDIDATE);
+	    				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
+	//    				target_cadidate_map_list.remove(target_map);
+        			}              		
+//                    Map<String, Object> msg_answer_map = new HashMap<>();
+//                    msg_answer_map.put(SENDANSWER, jsonObject);
+//            		sendMessageTo(JSON.toJSONString(msg_answer_map), jsonObject.getString("targetUser"));            		
+//            		System.out.println("SENDANSWER");
+            		break;                 		
                 default://令訊息狀態改為已讀          	                    
                     msgService.msgUpdateStatus(jsonObject.getString("msg_from"), jsonObject.getString("msg_to")); 
                     break;

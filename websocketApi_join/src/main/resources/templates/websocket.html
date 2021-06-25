@@ -96,12 +96,16 @@
 		navigator.mediaDevices.getUserMedia(constraints)
 		.then(function(stream) {
 			console.log("navigator~~~");
+			console.log(stream);
 			peer = new RTCPeerConnection(configuration);
 			peer.addStream(stream);
 			peer.onaddstream = function(streamEvent){
 				console.log("onaddstream~~~~~~~~~~~~~~~~~~~~~");
+				console.log(streamEvent.stream);
 // 				remoteVideo.src = URL.createObjectURL(streamEvent.stream);
-				remoteVideo.srcObject = streamEvent.stream;
+// 				remoteVideo.srcObject = streamEvent.stream;
+				remoteVideo.srcObject = streamEvent.stream[0];
+// 				videoElem.srcObject = ev.streams[0];
 				remoteVideo.volume = 0.2;
 				remoteVideo.controls = true;
 				remoteVideo.autoplay = true;
@@ -123,7 +127,7 @@
 				var candidate = event.candidate;
 				if(candidate){
 					var targetUser = $("#onLineUser").val();
-					var rtc_user = {"msg_type" : "sendCandidate","targetUser": targetUser,"originUser":userName, "candidate" : event.candidate};
+					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userName, "candidate" : event.candidate};
 					webSocket.send(JSON.stringify(rtc_user));	
 				}
 			};									
@@ -286,26 +290,27 @@
                 	break;  
 				case "sendCandidate"://接收candidate。
 	            	var candidateJson = obj[msg_type];
-	    			if(!peer){
-	    				console.log("原本沒有peer");
-	    				console.log(candidateJson.candidate);
-	    				peer = new RTCPeerConnection(configuration);	
-// 	    				peer.addIceCandidate(new RTCIceCandidate(candidateJson.candidate));
-	    				peer.addIceCandidate(candidateJson.candidate);
-	    			}else{
-	    				console.log("有peer");
-	    				console.log(candidateJson.candidate);
-	    				peer.addIceCandidate(candidateJson.candidate);
-	    			}						            	
+// 	    			if(!peer){
+// 	    				console.log("原本沒有peer");
+// 	    				console.log(candidateJson.candidate);
+// 	    				peer = new RTCPeerConnection(configuration);	
+// // 	    				peer.addIceCandidate(new RTCIceCandidate(candidateJson.candidate));
+// 	    				peer.addIceCandidate(candidateJson.candidate);
+// 	    			}else{
+	    			console.log("有peer");
+	    			console.log(candidateJson.candidate);
+	    			peer.addIceCandidate(candidateJson.candidate);
+// 	    			}						            	
 // 	            	setMessageInnerHTML(msg_content);
                 	break;
 				case "sendAnswer"://接收candidate。
 	            	var answerJson = obj[msg_type];
 	    			const answerSDP = new RTCSessionDescription(answerJson.answerSDP);
-	    			peer.setRemoteDescription(answerSDP);				
-// 	            	setMessageInnerHTML(msg_content);
-                	break;                	
-                	                	
+	    			peer.setRemoteDescription(answerSDP);
+	    			//傳送
+	    			var rtc_user = {"msg_type" : "sendCandidate","originUser":userName};
+	    			webSocket.send(JSON.stringify(rtc_user));
+                	break;                	             	
 				default://取得關鍵字搜尋筆數(msg_type=showKeyword)
 					let keywordMap= new Map();
 					obj[msg_type].forEach(function(msgVO){
@@ -341,27 +346,28 @@
 			console.log("navigator_offerSDP~~~");
 			if(!peer){
 				peer = new RTCPeerConnection(configuration);	
-			}			
+			}		
+			console.log(stream);
 			peer.addStream(stream);
 			peer.onaddstream = function(streamEvent){
 				console.log("onaddstream~~~~~~~~~~~~~~~~~~~~~");
+				console.log(streamEvent.stream);
 // 				remoteVideo.src = URL.createObjectURL(streamEvent.stream);
-				remoteVideo.srcObject = streamEvent.stream;
+// 				remoteVideo.srcObject = streamEvent.stream;
+				remoteVideo.srcObject = streamEvent.stream[0];
 				remoteVideo.volume = 0.2;
 				remoteVideo.controls = true;
 				remoteVideo.autoplay = true;				
 			};		
-// 			peer.ontrack = gotRemoteStream;
-			
-			
-			const SDP = new RTCSessionDescription(offerJson.offerSDP);
-			peer.setRemoteDescription(SDP);
+// 			peer.ontrack = gotRemoteStream;						
+			const offerSDP = new RTCSessionDescription(offerJson.offerSDP);
+			peer.setRemoteDescription(offerSDP);
 			//發送端處理offer
 			peer.createAnswer().then(answerSDP => {
 				console.log("createAnswer~~~~~~~~~~~");
 				var targetUser = offerJson.originUser;
 				var rtc_user = {"msg_type" : "sendAnswer","targetUser": targetUser,"originUser":userName,"answerSDP" : answerSDP};			
-			    peer.setLocalDescription(answerSDP);
+			    peer.setLocalDescription(answerSDP);			    
 			    webSocket.send(JSON.stringify(rtc_user));
 			});
 					
@@ -371,7 +377,7 @@
 				var candidate = event.candidate;
 				if(candidate){
 					var targetUser = offerJson.originUser;
-					var rtc_user = {"msg_type" : "sendCandidate","targetUser": targetUser,"originUser":userName,"candidate" : event.candidate};
+					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userName,"candidate" : event.candidate};
 					webSocket.send(JSON.stringify(rtc_user));	
 				}
 			};									
