@@ -2,21 +2,11 @@ package com.example.demo.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.demo.IContent;
 import com.example.demo.VO.MsgVO;
 import com.example.demo.service.MsgService;
-import org.apache.tomcat.util.http.parser.MediaType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.ContextLoader;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -38,22 +28,6 @@ public class WebSocketController {
 	}
 	
 	private MsgService msgService;
-	private final String SAVE = "save";
-	private final String GETMESSAGE = "getMessage";
-	private final String SEARCHKEYWORD = "searchKeyword";
-	private final String SHOWLASTMSG = "showLastMsg";
-	private final String SHOWMSGCOUNT = "showMsgCount";
-	private final String RECEIVE_OTHERS_MSG = "receive_others_msg";
-	private final String RECEIVE_OWN_MSG = "receive_own_msg";
-	private final String SHOWRECORD = "showRecord";
-	private final String SHOWKEYWORD = "showKeyword";
-	private final String BROADCAST = "broadcast";
-	private final String SENDOFFER = "sendOffer";
-	private final String SENDANSWER = "sendAnswer";
-	private final String STORECANDIDATE = "storeCandidate";
-	private final String SENDCANDIDATE = "sendCandidate";
-	
-	
 	
 	/**
      * 在線人數
@@ -73,6 +47,9 @@ public class WebSocketController {
      * User名稱
      */
     private String username;
+    /**
+     * UserID
+     */    
     private String userID;
     
 
@@ -104,12 +81,12 @@ public class WebSocketController {
             //查詢給自己的訊息            
             List<Map<String,Object>> lastMsg_list = msgService.getAllFromLastMessage(userID);
             Map<String, Object> lastMsg_map = new HashMap<>();
-            lastMsg_map.put(SHOWLASTMSG, lastMsg_list);
+            lastMsg_map.put(IContent.SHOWLASTMSG, lastMsg_list);
             sendMessageTo(JSON.toJSONString(lastMsg_map), userID);
             //查詢未讀訊息count
             List<Map<String, Object>> msg_count_list = msgService.getUnreadCount(userID);
             Map<String, Object> msg_count_map = new HashMap<>();
-            msg_count_map.put(SHOWMSGCOUNT, msg_count_list);
+            msg_count_map.put(IContent.SHOWMSGCOUNT, msg_count_list);
             sendMessageTo(JSON.toJSONString(msg_count_map), userID);                              
         } catch (IOException e) {
         	//上線的時候發生了錯誤
@@ -156,7 +133,7 @@ public class WebSocketController {
             JSONObject jsonObject = JSON.parseObject(message);
             String msg_type = jsonObject.getString("msg_type");
             switch(msg_type) {
-            	case SAVE://訊息儲存至DB
+            	case IContent.SAVE://訊息儲存至DB
                     MsgVO msgVO = new MsgVO();
                     msgVO.setMsg_from(jsonObject.getString("msg_from"));
                     msgVO.setMsg_to(jsonObject.getString("msg_to"));
@@ -176,49 +153,49 @@ public class WebSocketController {
                                         
                     if(clients.get(msgVO.getMsg_to())!= null) {                    	
                     	msgVO.setMsg_from_user_name(clients.get(msgVO.getMsg_from()).username);
-                    	msg_receive_map.put(RECEIVE_OTHERS_MSG, msgVO);
+                    	msg_receive_map.put(IContent.RECEIVE_OTHERS_MSG, msgVO);
                     	sendMessageTo(JSON.toJSONString(msg_receive_map), msgVO.getMsg_to());
                     }
                     //將訊息推播至自己
                     Map<String, Object> msg_receive_own_map = new HashMap<>();
-                    msg_receive_own_map.put(RECEIVE_OWN_MSG, msgVO);                    
+                    msg_receive_own_map.put(IContent.RECEIVE_OWN_MSG, msgVO);                    
                     sendMessageTo(JSON.toJSONString(msg_receive_own_map), msgVO.getMsg_from());
                     break;
-            	case GETMESSAGE://查詢與對方的聊天紀錄                	
+            	case IContent.GETMESSAGE://查詢與對方的聊天紀錄                	
                     String msg_from = jsonObject.getString("msg_from");
                     String msg_to = jsonObject.getString("msg_to");
                     List<Map<String,Object>> msg_record_list = msgService.getConversationRecord(msg_from, msg_to);
                     Map<String, Object> msg_record_map = new HashMap<>();
-                    msg_record_map.put(SHOWRECORD, msg_record_list);                
+                    msg_record_map.put(IContent.SHOWRECORD, msg_record_list);                
                     sendMessageTo(JSON.toJSONString(msg_record_map), msg_to);                
                     //令訊息狀態改為已讀
                     msgService.msgUpdateStatus(msg_from, msg_to);
                     break;
-            	case SEARCHKEYWORD://關鍵字搜尋    
+            	case IContent.SEARCHKEYWORD://關鍵字搜尋    
                 	MsgVO msgVO_3 = new MsgVO();            	
                 	msgVO_3.setMsg_from(jsonObject.getString("msg_from"));
                 	msgVO_3.setMsg_to(jsonObject.getString("msg_to"));
                 	msgVO_3.setMsg_content("%" + jsonObject.getString("msg_content") + "%");                        	
                     List<Map<String, Object>> msg_keyword_list = msgService.searchKeyword(msgVO_3);
                     Map<String, Object> msg_keyword_map = new HashMap<>();
-                    msg_keyword_map.put(SHOWKEYWORD, msg_keyword_list);                
+                    msg_keyword_map.put(IContent.SHOWKEYWORD, msg_keyword_list);                
                     sendMessageTo(JSON.toJSONString(msg_keyword_map), msgVO_3.getMsg_from());
                     break;                    
-            	case BROADCAST://廣播訊息送至在線人員
+            	case IContent.BROADCAST://廣播訊息送至在線人員
                     Map<String, Object> msg_broadcast_map = new HashMap<>();
-                    msg_broadcast_map.put(BROADCAST, jsonObject.getString("msg_content"));
+                    msg_broadcast_map.put(IContent.BROADCAST, jsonObject.getString("msg_content"));
             		sendMessageAll(JSON.toJSONString(msg_broadcast_map));
             		break;
-            	case SENDOFFER:
+            	case IContent.SENDOFFER:
                     Map<String, Object> msg_offer_map = new HashMap<>();
 //                    msg_offer_map.put(SENDOFFER, jsonObject.getString("offerSDP"));
-                    msg_offer_map.put(SENDOFFER, jsonObject);
+                    msg_offer_map.put(IContent.SENDOFFER, jsonObject);
             		sendMessageTo(JSON.toJSONString(msg_offer_map), jsonObject.getString("targetUser"));
             		System.out.println("SENDOFFER");
             		break;            		
-            	case STORECANDIDATE:
+            	case IContent.STORECANDIDATE:
                     Map<String, Object> msg_candidate_map = new HashMap<>();
-                    msg_candidate_map.put(SENDCANDIDATE, jsonObject);
+                    msg_candidate_map.put(IContent.SENDCANDIDATE, jsonObject);
                     if(null != clients_candidates.get(jsonObject.getString("originUser"))) {
 //                    	clients_candidates.get((jsonObject.getString("originUser")).
                     	clients_candidates.get(jsonObject.get("originUser")).add(msg_candidate_map);
@@ -229,30 +206,24 @@ public class WebSocketController {
                     }            		
             		System.out.println("SENDCANDIDATE");
             		break;   
-            	case SENDANSWER:
+            	case IContent.SENDANSWER:
                     Map<String, Object> msg_answer_map = new HashMap<>();
-                    msg_answer_map.put(SENDANSWER, jsonObject);
+                    msg_answer_map.put(IContent.SENDANSWER, jsonObject);
             		sendMessageTo(JSON.toJSONString(msg_answer_map), jsonObject.getString("targetUser"));            		
             		System.out.println("SENDANSWER");
             		break;     
-            	case SENDCANDIDATE:
+            	case IContent.SENDCANDIDATE:
             		ArrayList<Map<String, Object>> origin_cadidate_map_list = clients_candidates.get(jsonObject.get("originUser"));
-            		String targetUser = null;
             		for(int i=0;i<origin_cadidate_map_list.size();i++) {
             			Map<String, Object> origin_map = origin_cadidate_map_list.get(i);
-//            		for(Map<String, Object> origin_map:origin_cadidate_map_list) {
-            			JSONObject origin_json = (JSONObject) origin_map.get(SENDCANDIDATE);
+            			JSONObject origin_json = (JSONObject) origin_map.get(IContent.SENDCANDIDATE);
             			sendMessageTo(JSON.toJSONString(origin_map), origin_json.getString("targetUser"));
-            			targetUser = origin_json.getString("targetUser");
+            			
             			//刪除target_cadidate
-
             			ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(origin_json.getString("targetUser"));
             			for(int j=0; j<target_cadidate_map_list.size(); j++) {
             				Map<String, Object> target_map = target_cadidate_map_list.get(j);
-            				
-//                			}
-//                			for(Map<String, Object> target_map:target_cadidate_map_list) {
-            				JSONObject target_json = (JSONObject) target_map.get(SENDCANDIDATE);
+            				JSONObject target_json = (JSONObject) target_map.get(IContent.SENDCANDIDATE);
             				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
             				target_cadidate_map_list.remove(j);
             				j--;
@@ -261,16 +232,6 @@ public class WebSocketController {
             			origin_cadidate_map_list.remove(i);
             			i--;
             		}
-//            		ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(targetUser);
-//        			for(Map<String, Object> target_map:target_cadidate_map_list) {
-//	    				JSONObject target_json = (JSONObject) target_map.get(SENDCANDIDATE);
-//	    				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
-	//    				target_cadidate_map_list.remove(target_map);
-//        			}              		
-//                    Map<String, Object> msg_answer_map = new HashMap<>();
-//                    msg_answer_map.put(SENDANSWER, jsonObject);
-//            		sendMessageTo(JSON.toJSONString(msg_answer_map), jsonObject.getString("targetUser"));            		
-//            		System.out.println("SENDANSWER");
             		break;                 		
                 default://令訊息狀態改為已讀          	                    
                     msgService.msgUpdateStatus(jsonObject.getString("msg_from"), jsonObject.getString("msg_to")); 
@@ -281,13 +242,11 @@ public class WebSocketController {
         }
     }
 
-    
     //將訊息送至指定用戶
     public void sendMessageTo(String message, String ToUserName) throws IOException {
     	WebSocketController itemTest = clients.get(ToUserName);
 		itemTest.session.getAsyncRemote().sendText(message);    	
     }
-    
     
     //廣播給在線上的所有User
     public void sendMessageAll(String message) throws IOException {
