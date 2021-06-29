@@ -106,17 +106,12 @@
 			peer = new RTCPeerConnection(configuration);
 			peer.addStream(stream);
 			peer.onaddstream = function(streamEvent){
-				console.log("onaddstream~~~~~~~~~~~~~~~~~~~~~");
-				console.log(streamEvent.stream);
-// 				remoteVideo.src = URL.createObjectURL(streamEvent.stream);
+				console.log("Offer onaddstream~~~~~~~~~~~~~~~~~~~~~");
+// 				console.log(streamEvent.stream);
 				remoteVideo.srcObject = streamEvent.stream;
-// 				remoteVideo.srcObject = streamEvent.stream[0];
-// 				videoElem.srcObject = ev.streams[0];
-// 				remoteVideo.volume = 0.2;
 				remoteVideo.play();
 			};		
 			localStream = stream;
-// 			localStream.getTracks().forEach((track) => peer.addTrack(track, localStream));
 			//發送端處理offer
 			peer.createOffer().then(offer => {
 				console.log("createOffer~~~~~~~~~~~");
@@ -127,8 +122,7 @@
 			});
 					
 			peer.onicecandidate = function(event){
-				console.log("333333333333333");
-				console.log("onicecandidate~~~~");
+				console.log("Offer onicecandidate~~~~");
 				var candidate = event.candidate;
 				if(candidate){
 					var targetUser = $("#onLineUser").val();
@@ -140,7 +134,7 @@
 			document.getElementById("hangup-button").disabled = false;
 		})
 		.catch(function(err) {
-		  /* 处理error */
+		 	/* 處理error */
 		});				
 
 	}
@@ -166,7 +160,6 @@
 		remoteVideo.removeAttribute("src");
 		remoteVideo.removeAttribute("srcObject");		
 		document.getElementById("hangup-button").disabled = true;
-// 		targetUsername = null;
 	}	
 			
 	function handleICEConnectionStateChangeEvent(event) {
@@ -181,7 +174,7 @@
 	}	
 	
     if ("WebSocket" in window) {
-    	//ws://localhost:8080/websocket/{memID}
+    	//ws://localhost:8080/websocket/{userID}
         webSocket = new WebSocket("ws://localhost:8080/websocket/" + userID);        
         //連通之後觸發
         webSocket.onopen = function () {
@@ -273,18 +266,9 @@
                 	break;  
 				case "sendCandidate"://接收candidate。
 	            	var candidateJson = obj[msg_type];
-// 	    			if(!peer){
-// 	    				console.log("原本沒有peer");
-// 	    				console.log(candidateJson.candidate);
-// 	    				peer = new RTCPeerConnection(configuration);	
-// // 	    				peer.addIceCandidate(new RTCIceCandidate(candidateJson.candidate));
-// 	    				peer.addIceCandidate(candidateJson.candidate);
-// 	    			}else{
 	    			console.log("有peer");
 	    			console.log(candidateJson.candidate);
 	    			peer.addIceCandidate(candidateJson.candidate);
-// 	    			}						            	
-// 	            	setMessageInnerHTML(msg_content);
                 	break;
 				case "sendAnswer"://接收candidate。
 	            	var answerJson = obj[msg_type];
@@ -333,7 +317,7 @@
 			console.log(stream);
 			peer.addStream(stream);
 			peer.onaddstream = function(streamEvent){
-				console.log("onaddstream~~~~~~~~~~~~~~~~~~~~~");
+				console.log("Answeronaddstream~~~~~~~~~~~~~~~~~~~~~");
 				console.log(streamEvent.stream);
 				remoteVideo.srcObject = streamEvent.stream;
 				remoteVideo.play();		
@@ -351,7 +335,6 @@
 			});
 					
 			peer.onicecandidate = function(event){
-				console.log("44444444444444");
 				console.log("answer_onicecandidate~~~~");
 				var candidate = event.candidate;
 				if(candidate){

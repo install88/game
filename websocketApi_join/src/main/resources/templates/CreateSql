@@ -1,9 +1,9 @@
 -- test_join.customer definition
 
 CREATE TABLE `customer` (
-  `memID` varchar(100) NOT NULL,
+  `userID` varchar(100) NOT NULL,
   `username` varchar(100) NOT NULL,
-  PRIMARY KEY (`memID`)
+  PRIMARY KEY (`userID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='會員';
 
 
@@ -19,6 +19,6 @@ CREATE TABLE `message` (
   PRIMARY KEY (`msg_id`),
   KEY `message_FK` (`msg_from`),
   KEY `message_FK_1` (`msg_to`),
-  CONSTRAINT `message_FK` FOREIGN KEY (`msg_from`) REFERENCES `customer` (`memID`),
-  CONSTRAINT `message_FK_1` FOREIGN KEY (`msg_to`) REFERENCES `customer` (`memID`)
+  CONSTRAINT `message_FK` FOREIGN KEY (`msg_from`) REFERENCES `customer` (`userID`),
+  CONSTRAINT `message_FK_1` FOREIGN KEY (`msg_to`) REFERENCES `customer` (`userID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
