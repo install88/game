@@ -33,6 +33,11 @@
         select msg_from, msg_to, count(*) as msg_count from message where (msg_from = #{msg_from} or msg_to = #{msg_to}) and msg_content like #{msg_content} group by msg_from
     </select>
     
+    <select id="getOwnInfo" parameterType="String" resultType="map">
+        select username from customer where memID = #{userID}
+    </select>    
+    
+    
 	<update  id="msgUpdateStatus" parameterType="MsgVO">
 		update message set msg_status=1
 		where msg_from = #{msg_from} and msg_to= #{msg_to} and msg_status=0

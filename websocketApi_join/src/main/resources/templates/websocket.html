@@ -62,13 +62,19 @@
 	     </div>
 	 </div>		
 	<video id="remoteVideo" style="width: 400px;height: 300px;"></video>
-	<input type="text" th:value="${username}" id="username" style="display: none"/>
+	<input type="text" th:value="${userID}" id="userID" style="display: none"/>
+	
+    <button id="hangup-button" onclick="closeVideoCall();" disabled>
+		Hang Up
+    </button>	
+	
 </body>
 
 
 <script type="text/javascript">
 	let userMap= new Map();
-	const userName = document.getElementById('username').value;
+	const userID = document.getElementById('userID').value;
+	console.log("userID" + userID);
     var remoteVideo = document.querySelector('video#remoteVideo');
 	var webSocket;
 	var commWebSocket;
@@ -103,12 +109,11 @@
 				console.log("onaddstream~~~~~~~~~~~~~~~~~~~~~");
 				console.log(streamEvent.stream);
 // 				remoteVideo.src = URL.createObjectURL(streamEvent.stream);
-// 				remoteVideo.srcObject = streamEvent.stream;
-				remoteVideo.srcObject = streamEvent.stream[0];
+				remoteVideo.srcObject = streamEvent.stream;
+// 				remoteVideo.srcObject = streamEvent.stream[0];
 // 				videoElem.srcObject = ev.streams[0];
-				remoteVideo.volume = 0.2;
-				remoteVideo.controls = true;
-				remoteVideo.autoplay = true;
+// 				remoteVideo.volume = 0.2;
+				remoteVideo.play();
 			};		
 			localStream = stream;
 // 			localStream.getTracks().forEach((track) => peer.addTrack(track, localStream));
@@ -116,7 +121,7 @@
 			peer.createOffer().then(offer => {
 				console.log("createOffer~~~~~~~~~~~");
 				var targetUser = $("#onLineUser").val();
-				var rtc_user = {"msg_type" : "sendOffer","targetUser": targetUser,"originUser":userName, "offerSDP" : offer};			
+				var rtc_user = {"msg_type" : "sendOffer","targetUser": targetUser,"originUser":userID, "offerSDP" : offer};			
 			    peer.setLocalDescription(offer);
 			    webSocket.send(JSON.stringify(rtc_user));
 			});
@@ -127,66 +132,57 @@
 				var candidate = event.candidate;
 				if(candidate){
 					var targetUser = $("#onLineUser").val();
-					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userName, "candidate" : event.candidate};
+					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userID, "candidate" : event.candidate};
 					webSocket.send(JSON.stringify(rtc_user));	
 				}
-			};									
+			};	
+			peer.oniceconnectionstatechange = handleICEConnectionStateChangeEvent;
+			document.getElementById("hangup-button").disabled = false;
 		})
 		.catch(function(err) {
 		  /* 处理error */
 		});				
-// 		console.log(pc);
-		// 當有任何 ICE candidates 可用時，
-		// 透過 signalingChannel 將 candidate 傳送給對方
-// 		pc.onicecandidate = function (evt) {
-// 			console.log("onicecandidate~~~");
-// 			if(evt.candidate){
-// 				console.log("onicecandidate進入判斷~~~");
-// 				webSocket.send(JSON.stringify({ "candidate": evt.candidate }));	
-// 			}					  	
-// 		};
 
-		// let the "negotiationneeded" event trigger offer generation
-// 		pc.onnegotiationneeded = function () {
-// 			console.log("onnegotiationneeded~~~");
-// 			pc.createOffer(localDescCreated, logError);
-// 		}
-
-		// once remote stream arrives, show it in the remote video element
-// 		pc.onaddstream = function(obj) {
-// 			console.log("onaddstream進來了~~~~");
-// 			var video = document.createElement("video");
-
-// // 			document.appendChild(video);
-			
-// 			if ('srcObject' in video) {
-// 				  video.srcObject = obj.stream;
-// 				} else {
-// 				  // Avoid using this in new browsers, as it is going away.
-// 				  video.src = URL.createObjectURL(obj.stream);
-// 				}			
-// // 			audio.srcObject = obj.stream;
-// 			console.log(obj.stream);
-// 			console.log(video);
-// 		}
-
-  
 	}
 	
-// 	function localDescCreated(desc) {
-// 		pc.setLocalDescription(desc, function () {
-// 			webSocket.send(JSON.stringify({ "sdp": pc.localDescription }));
-// 		}, logError);
-// 	}
-	
-	function logError(){
+	function closeVideoCall() {
+		var remoteVideo = document.getElementById("remoteVideo");
+		if (peer) {
+// 			peer.ontrack = null;
+// 			peer.onremovetrack = null;
+// 			peer.onremovestream = null;
+// 			peer.onicecandidate = null;
+// 			peer.oniceconnectionstatechange = null;
+// 			peer.onsignalingstatechange = null;
+// 			peer.onicegatheringstatechange = null;
+// 			peer.onnegotiationneeded = null;
 		
-	}
+			if (remoteVideo.srcObject) {
+ 				remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+			}				
+			peer.close();
+			peer = null;
+		}		
+		remoteVideo.removeAttribute("src");
+		remoteVideo.removeAttribute("srcObject");		
+		document.getElementById("hangup-button").disabled = true;
+// 		targetUsername = null;
+	}	
+			
+	function handleICEConnectionStateChangeEvent(event) {
+		switch(peer.iceConnectionState) {
+			case "closed":
+		    case "failed":
+		    case "disconnected":		    	
+		    	console.log("監聽到關閉~~~~~~~~~~~~~~~~~~~~~~");
+				closeVideoCall();
+		      	break;
+		}
+	}	
 	
     if ("WebSocket" in window) {
     	//ws://localhost:8080/websocket/{memID}
-        webSocket = new WebSocket("ws://localhost:8080/websocket/" + userName);
-        
+        webSocket = new WebSocket("ws://localhost:8080/websocket/" + userID);        
         //連通之後觸發
         webSocket.onopen = function () {
 //             console.log("已經連通了websocket");
@@ -194,23 +190,10 @@
 
 		//接收後端sever發送的消息
         webSocket.onmessage = function (evt) {
-			console.log(evt);
-//         	if(!peer){
-//         		console.log("要進入start");
-//         		start();
-//         	}        		    			
+			console.log(evt);   		    			
             var received_msg = evt.data;                    
             console.log("數據已接收:" + received_msg);
-            var obj = JSON.parse(received_msg);
-            
-    	    //如果是一个ICE的候选，则将其加入到PeerConnection中，否则设定对方的session描述为传递过来的描述
-//     	    if( obj.event === "__ice_candidate" ){
-//     	    	console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~有candidate");
-//     	        pc.addIceCandidate(new RTCIceCandidate(obj.data.candidate));
-//     	    } else {
-//     	         pc.setRemoteDescription(new RTCSessionDescription(obj.data.sdp));
-//     	    }
-    	    
+            var obj = JSON.parse(received_msg);                	    
             var msg_type = Object.keys(obj)[0];
             console.log("msg_type=" + msg_type);
             switch(msg_type){
@@ -237,7 +220,7 @@
 				case "showRecord"://顯示與該朋友的對話
 					let haveRead = false; 
 	                obj[msg_type].forEach(function(msgVO){
-	                	if(haveRead == false && msgVO.msg_status == 0 && msgVO.msg_to == userName){
+	                	if(haveRead == false && msgVO.msg_status == 0 && msgVO.msg_to == userID){
 	                		haveRead = true;
 	                		setMessageInnerHTML("下列未讀");
 	                		setMessageInnerHTML_adjustBar(msgVO.msg_from_username + ":" + msgVO.msg_content);
@@ -258,13 +241,13 @@
                 	break;                	                	
 				case "receive_others_msg"://在線時，接收訊息。
 	            	var msgVO = obj[msg_type];
-	            	setMessageInnerHTML(msgVO.msg_from + ":" + msgVO.msg_content);
+	            	setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);
 	            	//若聊天視窗無開啟的情況，未讀訊息要增加。
 	            	if($("#onLineUser").val()!= msgVO.msg_from){
 	            		handleMapLogic(userMap, msgVO.msg_from, 1);
-	            		setMessageInnerHTML(msgVO.msg_from + "的未讀訊息有" + userMap.get(msgVO.msg_from));	
+	            		setMessageInnerHTML(msgVO.msg_from_user_name + "的未讀訊息有" + userMap.get(msgVO.msg_from));	
 	            	}else{            	
-	            		setMessageInnerHTML(msgVO.msg_from + "的未讀訊息有" + 0);            		
+	            		setMessageInnerHTML(msgVO.msg_from_user_name + "的未讀訊息有" + 0);            		
 	            		//已經開啟跟該用戶聊天的視窗，故要把訊息儲存成已讀。
 	                    var message = {            
 	                            "msg_from": msgVO.msg_from,
@@ -277,7 +260,7 @@
                 	break; 
 				case "receive_own_msg"://接收自己訊息。
 	            	var msgVO = obj[msg_type];
-	            	setMessageInnerHTML(msgVO.msg_from + ":" + msgVO.msg_content);  
+	            	setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);  
                 	break;                 	                	                	                	
 				case "broadcast"://接收廣播訊息。
 	            	var msg_content = obj[msg_type];
@@ -308,13 +291,13 @@
 	    			const answerSDP = new RTCSessionDescription(answerJson.answerSDP);
 	    			peer.setRemoteDescription(answerSDP);
 	    			//傳送
-	    			var rtc_user = {"msg_type" : "sendCandidate","originUser":userName};
+	    			var rtc_user = {"msg_type" : "sendCandidate","originUser":userID};
 	    			webSocket.send(JSON.stringify(rtc_user));
                 	break;                	             	
 				default://取得關鍵字搜尋筆數(msg_type=showKeyword)
 					let keywordMap= new Map();
 					obj[msg_type].forEach(function(msgVO){
-						if(msgVO.msg_from == userName){
+						if(msgVO.msg_from == userID){
                 			handleMapLogic(keywordMap, msgVO.msg_to, msgVO.msg_count);
                 		}else{
                 			handleMapLogic(keywordMap, msgVO.msg_from, msgVO.msg_count);             		
@@ -352,12 +335,8 @@
 			peer.onaddstream = function(streamEvent){
 				console.log("onaddstream~~~~~~~~~~~~~~~~~~~~~");
 				console.log(streamEvent.stream);
-// 				remoteVideo.src = URL.createObjectURL(streamEvent.stream);
-// 				remoteVideo.srcObject = streamEvent.stream;
-				remoteVideo.srcObject = streamEvent.stream[0];
-				remoteVideo.volume = 0.2;
-				remoteVideo.controls = true;
-				remoteVideo.autoplay = true;				
+				remoteVideo.srcObject = streamEvent.stream;
+				remoteVideo.play();		
 			};		
 // 			peer.ontrack = gotRemoteStream;						
 			const offerSDP = new RTCSessionDescription(offerJson.offerSDP);
@@ -366,7 +345,7 @@
 			peer.createAnswer().then(answerSDP => {
 				console.log("createAnswer~~~~~~~~~~~");
 				var targetUser = offerJson.originUser;
-				var rtc_user = {"msg_type" : "sendAnswer","targetUser": targetUser,"originUser":userName,"answerSDP" : answerSDP};			
+				var rtc_user = {"msg_type" : "sendAnswer","targetUser": targetUser,"originUser":userID,"answerSDP" : answerSDP};			
 			    peer.setLocalDescription(answerSDP);			    
 			    webSocket.send(JSON.stringify(rtc_user));
 			});
@@ -377,10 +356,12 @@
 				var candidate = event.candidate;
 				if(candidate){
 					var targetUser = offerJson.originUser;
-					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userName,"candidate" : event.candidate};
+					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userID,"candidate" : event.candidate};
 					webSocket.send(JSON.stringify(rtc_user));	
 				}
-			};									
+			};	
+			peer.oniceconnectionstatechange = handleICEConnectionStateChangeEvent;
+			document.getElementById("hangup-button").disabled = false;
 		})
 		.catch(function(err) {
 		  /* 处理error */
@@ -391,7 +372,7 @@
     function send() {
         var selectText = $("#onLineUser").find("option:selected").text();
         var message = {            
-                "msg_from": userName,
+                "msg_from": userID,
                 "msg_to": selectText,
                 "msg_content": document.getElementById('text').value,
                 "msg_status" : 0,
@@ -419,8 +400,8 @@
     function search() {
         var searchText = $("#search").val();
         var message = {            
-            "msg_from": userName,
-            "msg_to": userName,
+            "msg_from": userID,
+            "msg_to": userID,
             "msg_content": searchText,
             "msg_type" : "searchKeyword"
         };        
@@ -454,7 +435,7 @@
         	var msg_from = $("#onLineUser").val();
             var message = {
                     "msg_from": msg_from,
-                    "msg_to": userName,
+                    "msg_to": userID,
                     "msg_type" : "getMessage"
                 };
             webSocket.send(JSON.stringify(message));            

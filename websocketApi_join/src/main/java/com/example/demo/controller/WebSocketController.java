@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @Component
-@ServerEndpoint("/websocket/{username}")
+@ServerEndpoint("/websocket/{userID}")
 public class WebSocketController {	
 	private static ApplicationContext applicationContext;
 	 
@@ -73,6 +73,8 @@ public class WebSocketController {
      * User名稱
      */
     private String username;
+    private String userID;
+    
 
     /**
      * OnOpen 表示有瀏覽器連接過來的時候調用
@@ -87,24 +89,28 @@ public class WebSocketController {
      * @param session
      */
     @OnOpen
-    public void onOpen(@PathParam("username") String username, Session session) {    	
-        this.username = username;
+    public void onOpen(@PathParam("userID") String userID, Session session) {    	
+        this.userID = userID;
         this.session = session;        
         try {
             //把自己的資訊加入到map管理
-            clients.put(username, this);
-            addOnlineCount();    
-            //查詢給自己的訊息
+            clients.put(userID, this);
+            addOnlineCount();                            
+            //查詢個人資訊
             msgService = applicationContext.getBean(MsgService.class);
-            List<Map<String,Object>> lastMsg_list = msgService.getAllFromLastMessage(username);
+            Map<String,Object> ownInfoMap = msgService.getOwnInfo(userID);
+            this.username = (String) ownInfoMap.get("username");
+            
+            //查詢給自己的訊息            
+            List<Map<String,Object>> lastMsg_list = msgService.getAllFromLastMessage(userID);
             Map<String, Object> lastMsg_map = new HashMap<>();
             lastMsg_map.put(SHOWLASTMSG, lastMsg_list);
-            sendMessageTo(JSON.toJSONString(lastMsg_map), username);
+            sendMessageTo(JSON.toJSONString(lastMsg_map), userID);
             //查詢未讀訊息count
-            List<Map<String, Object>> msg_count_list = msgService.getUnreadCount(username);
+            List<Map<String, Object>> msg_count_list = msgService.getUnreadCount(userID);
             Map<String, Object> msg_count_map = new HashMap<>();
             msg_count_map.put(SHOWMSGCOUNT, msg_count_list);
-            sendMessageTo(JSON.toJSONString(msg_count_map), username);                              
+            sendMessageTo(JSON.toJSONString(msg_count_map), userID);                              
         } catch (IOException e) {
         	//上線的時候發生了錯誤
         	System.out.println(e.getMessage());
@@ -167,9 +173,10 @@ public class WebSocketController {
 //                  String strbody = restTemplate.exchange(url, HttpMethod.GET, entity,String.class).getBody();
 //                  JSONObject jsonObject2 = JSON.parseObject(strbody);
 //                  JSONObject usernameTest = jsonObject2.getJSONObject("RET");                    
-                    
-                    msg_receive_map.put(RECEIVE_OTHERS_MSG, msgVO);
-                    if(clients.get(msgVO.getMsg_to())!= null) {
+                                        
+                    if(clients.get(msgVO.getMsg_to())!= null) {                    	
+                    	msgVO.setMsg_from_user_name(clients.get(msgVO.getMsg_from()).username);
+                    	msg_receive_map.put(RECEIVE_OTHERS_MSG, msgVO);
                     	sendMessageTo(JSON.toJSONString(msg_receive_map), msgVO.getMsg_to());
                     }
                     //將訊息推播至自己
@@ -231,32 +238,35 @@ public class WebSocketController {
             	case SENDCANDIDATE:
             		ArrayList<Map<String, Object>> origin_cadidate_map_list = clients_candidates.get(jsonObject.get("originUser"));
             		String targetUser = null;
-            		for(Map<String, Object> origin_map:origin_cadidate_map_list) {
+            		for(int i=0;i<origin_cadidate_map_list.size();i++) {
+            			Map<String, Object> origin_map = origin_cadidate_map_list.get(i);
+//            		for(Map<String, Object> origin_map:origin_cadidate_map_list) {
             			JSONObject origin_json = (JSONObject) origin_map.get(SENDCANDIDATE);
             			sendMessageTo(JSON.toJSONString(origin_map), origin_json.getString("targetUser"));
             			targetUser = origin_json.getString("targetUser");
             			//刪除target_cadidate
-//            			try {
-//                			ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(origin_json.getString("targetUser"));
-//                			for(Map<String, Object> target_map:target_cadidate_map_list) {
-//                				JSONObject target_json = (JSONObject) target_map.get(SENDCANDIDATE);
-//                				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
-////                				target_cadidate_map_list.remove(target_map);
-//                			}            				
-//            			}catch(Exception e) {
-//            				System.out.println(e.getMessage());
-//            			}
 
-            		
+            			ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(origin_json.getString("targetUser"));
+            			for(int j=0; j<target_cadidate_map_list.size(); j++) {
+            				Map<String, Object> target_map = target_cadidate_map_list.get(j);
+            				
+//                			}
+//                			for(Map<String, Object> target_map:target_cadidate_map_list) {
+            				JSONObject target_json = (JSONObject) target_map.get(SENDCANDIDATE);
+            				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
+            				target_cadidate_map_list.remove(j);
+            				j--;
+            			}            				
             			//刪除origin_cadidate
-//            			origin_cadidate_map_list.remove(origin_map);
+            			origin_cadidate_map_list.remove(i);
+            			i--;
             		}
-            		ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(targetUser);
-        			for(Map<String, Object> target_map:target_cadidate_map_list) {
-	    				JSONObject target_json = (JSONObject) target_map.get(SENDCANDIDATE);
-	    				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
+//            		ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(targetUser);
+//        			for(Map<String, Object> target_map:target_cadidate_map_list) {
+//	    				JSONObject target_json = (JSONObject) target_map.get(SENDCANDIDATE);
+//	    				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
 	//    				target_cadidate_map_list.remove(target_map);
-        			}              		
+//        			}              		
 //                    Map<String, Object> msg_answer_map = new HashMap<>();
 //                    msg_answer_map.put(SENDANSWER, jsonObject);
 //            		sendMessageTo(JSON.toJSONString(msg_answer_map), jsonObject.getString("targetUser"));            		

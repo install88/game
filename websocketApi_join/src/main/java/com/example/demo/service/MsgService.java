@@ -36,7 +36,11 @@ public class MsgService {
     
     public List<Map<String,Object>> searchKeyword(MsgVO msgVO) {
     	return msgMapper.searchKeyword(msgVO);
-    }       
+    }    
+    
+    public Map<String,Object> getOwnInfo(String userID) {
+    	return msgMapper.getOwnInfo(userID);
+    }        
     
     @Transactional
     public void msgUpdateStatus(String msg_from, String msg_to) {
