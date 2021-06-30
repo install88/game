@@ -83,7 +83,9 @@
 
 	var peer;
 	//使用Google的stun服务器
-	var configuration = { "iceServers": [{ "url": "stun:stun.example.org" }] };
+// 	var configuration = { "iceServers": [{ "url": "stun:stun.example.org" }] };
+	var configuration = { "iceServers": [{ "url": "stun:stun.1und1.de:3478" }] };
+
 	
 	//兼容浏览器的getUserMedia写法
 	var getUserMedia = (navigator.getUserMedia ||
@@ -104,13 +106,28 @@
 			console.log("navigator~~~");
 			console.log(stream);
 			peer = new RTCPeerConnection(configuration);
-			peer.addStream(stream);
-			peer.onaddstream = function(streamEvent){
-				console.log("Offer onaddstream~~~~~~~~~~~~~~~~~~~~~");
-// 				console.log(streamEvent.stream);
-				remoteVideo.srcObject = streamEvent.stream;
+			
+			stream.getTracks().forEach(track => {
+				console.log("track~~~~~~");
+				peer.addTrack(track, stream);
+			});
+			
+			peer.ontrack = event => {
+// 			    this.remoteMediaStream = event.streams[0];
+				console.log("觸發ontrack offer端~~~~~~~~~");
+				console.log(event.streams[0]);
+// 			    remoteVideo.srcObject = event.stream;
+				remoteVideo.srcObject = event.streams[0];
 				remoteVideo.play();
-			};		
+			};
+			
+// 			peer.addStream(stream);
+// 			peer.onaddstream = function(streamEvent){
+// 				console.log("Offer onaddstream~~~~~~~~~~~~~~~~~~~~~");
+// // 				console.log(streamEvent.stream);
+// 				remoteVideo.srcObject = streamEvent.stream;
+// 				remoteVideo.play();
+// 			};		
 			localStream = stream;
 			//發送端處理offer
 			peer.createOffer().then(offer => {
@@ -140,7 +157,7 @@
 	}
 	
 	function closeVideoCall() {
-		var remoteVideo = document.getElementById("remoteVideo");
+		remoteVideo.srcObject = null;
 		if (peer) {
 // 			peer.ontrack = null;
 // 			peer.onremovetrack = null;
@@ -149,16 +166,12 @@
 // 			peer.oniceconnectionstatechange = null;
 // 			peer.onsignalingstatechange = null;
 // 			peer.onicegatheringstatechange = null;
-// 			peer.onnegotiationneeded = null;
-		
-			if (remoteVideo.srcObject) {
- 				remoteVideo.srcObject.getTracks().forEach(track => track.stop());
-			}				
+// 			peer.onnegotiationneeded = null;			
 			peer.close();
 			peer = null;
 		}		
-		remoteVideo.removeAttribute("src");
-		remoteVideo.removeAttribute("srcObject");		
+// 		remoteVideo.removeAttribute("src");
+// 		remoteVideo.removeAttribute("srcObject");		
 		document.getElementById("hangup-button").disabled = true;
 	}	
 			
@@ -167,7 +180,7 @@
 			case "closed":
 		    case "failed":
 		    case "disconnected":		    	
-		    	console.log("監聽到關閉~~~~~~~~~~~~~~~~~~~~~~");
+		    	console.log("監聽到關閉~~~~~~~~~~~~~~~~~~~~~~" + peer.iceConnectionState);
 				closeVideoCall();
 		      	break;
 		}
@@ -175,7 +188,7 @@
 	
     if ("WebSocket" in window) {
     	//ws://localhost:8080/websocket/{userID}
-        webSocket = new WebSocket("ws://localhost:8080/websocket/" + userID);        
+        webSocket = new WebSocket("ws://192.168.50.19:8080/websocket/" + userID);        
         //連通之後觸發
         webSocket.onopen = function () {
 //             console.log("已經連通了websocket");
@@ -315,13 +328,27 @@
 				peer = new RTCPeerConnection(configuration);	
 			}		
 			console.log(stream);
-			peer.addStream(stream);
-			peer.onaddstream = function(streamEvent){
-				console.log("Answeronaddstream~~~~~~~~~~~~~~~~~~~~~");
-				console.log(streamEvent.stream);
-				remoteVideo.srcObject = streamEvent.stream;
-				remoteVideo.play();		
-			};		
+			stream.getTracks().forEach(track => {
+				console.log("track~~~~~~");
+				peer.addTrack(track, stream);
+			});
+			
+			peer.ontrack = event => {
+// 			    this.remoteMediaStream = event.streams[0];
+				console.log("觸發ontrack Answer端~~~~~~~~~");
+				console.log(event.streams[0]);
+// 			    remoteVideo.srcObject = event.stream;
+				remoteVideo.srcObject = event.streams[0];
+				remoteVideo.play();
+			};			
+			
+// 			peer.addStream(stream);
+// 			peer.onaddstream = function(streamEvent){
+// 				console.log("Answeronaddstream~~~~~~~~~~~~~~~~~~~~~");
+// 				console.log(streamEvent.stream);
+// 				remoteVideo.srcObject = streamEvent.stream;
+// 				remoteVideo.play();		
+// 			};		
 // 			peer.ontrack = gotRemoteStream;						
 			const offerSDP = new RTCSessionDescription(offerJson.offerSDP);
 			peer.setRemoteDescription(offerSDP);

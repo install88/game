@@ -34,7 +34,7 @@ public class WebSocketController {
      */
     public static int onlineNumber = 0;
     /**
-     * 以User姓名为key，將WebSocket為對象保存起来
+     * 以User姓名為key，將WebSocket為對象保存起来
      */
     private static Map<String, WebSocketController> clients = new ConcurrentHashMap<String, WebSocketController>();
     
@@ -92,8 +92,6 @@ public class WebSocketController {
         	//上線的時候發生了錯誤
         	System.out.println(e.getMessage());
         }
-
-
     }
 
     
