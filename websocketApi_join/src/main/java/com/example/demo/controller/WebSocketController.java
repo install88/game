@@ -194,23 +194,27 @@ public class WebSocketController {
             	case IContent.STORECANDIDATE:
                     Map<String, Object> msg_candidate_map = new HashMap<>();
                     msg_candidate_map.put(IContent.SENDCANDIDATE, jsonObject);
-                    if(null != clients_candidates.get(jsonObject.getString("originUser"))) {
-//                    	clients_candidates.get((jsonObject.getString("originUser")).
-                    	clients_candidates.get(jsonObject.get("originUser")).add(msg_candidate_map);
-                    }else {
-                    	ArrayList<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-                    	list.add(msg_candidate_map);
-                    	clients_candidates.put((String) jsonObject.get("originUser"), list);
-                    }            		
+                    if(jsonObject.getBoolean("answerSetting_isReady")) {//當客戶端remote(answer)設定完成以後，可以直接把candidate傳給對方
+            			sendMessageTo(JSON.toJSONString(msg_candidate_map), jsonObject.getString("targetUser"));                    	
+                    }else{
+                        if(null != clients_candidates.get(jsonObject.getString("originUser"))) {
+//                        	clients_candidates.get((jsonObject.getString("originUser")).
+                        	clients_candidates.get(jsonObject.get("originUser")).add(msg_candidate_map);
+                        }else {
+                        	ArrayList<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+                        	list.add(msg_candidate_map);
+                        	clients_candidates.put((String) jsonObject.get("originUser"), list);
+                        }                       	
+                    }         		
             		System.out.println("SENDCANDIDATE");
             		break;   
-            	case IContent.SENDANSWER:
+            	case IContent.SENDANSWER://
                     Map<String, Object> msg_answer_map = new HashMap<>();
                     msg_answer_map.put(IContent.SENDANSWER, jsonObject);
             		sendMessageTo(JSON.toJSONString(msg_answer_map), jsonObject.getString("targetUser"));            		
             		System.out.println("SENDANSWER");
             		break;     
-            	case IContent.SENDCANDIDATE:
+            	case IContent.SENDCANDIDATE://分發自己的candidate給要通話的對象
             		ArrayList<Map<String, Object>> origin_cadidate_map_list = clients_candidates.get(jsonObject.get("originUser"));
             		for(int i=0;i<origin_cadidate_map_list.size();i++) {
             			Map<String, Object> origin_map = origin_cadidate_map_list.get(i);
@@ -230,7 +234,12 @@ public class WebSocketController {
             			origin_cadidate_map_list.remove(i);
             			i--;
             		}
-            		break;                 		
+            		break;
+            	case IContent.SENDANSWERISREADY:
+                    Map<String, Object> msg_answer_is_ready_map = new HashMap<>();
+                    msg_answer_is_ready_map.put(IContent.SENDANSWERISREADY, "");            		
+            		sendMessageTo(JSON.toJSONString(msg_answer_is_ready_map), jsonObject.getString("targetUser"));
+            		break;
                 default://令訊息狀態改為已讀          	                    
                     msgService.msgUpdateStatus(jsonObject.getString("msg_from"), jsonObject.getString("msg_to")); 
                     break;

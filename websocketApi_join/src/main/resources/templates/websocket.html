@@ -78,6 +78,7 @@
     var remoteVideo = document.querySelector('video#remoteVideo');
 	var webSocket;
 	var commWebSocket;
+	let answerSetting_isReady = false;
 	
 	let localStream;
 
@@ -88,20 +89,28 @@
 
 	
 	//兼容浏览器的getUserMedia写法
-	var getUserMedia = (navigator.getUserMedia ||
-	                    navigator.webkitGetUserMedia || 
-	                    navigator.mozGetUserMedia || 
-	                    navigator.msGetUserMedia);
+// 	var getUserMedia = (navigator.getUserMedia ||
+// 	                    navigator.webkitGetUserMedia || 
+// 	                    navigator.mozGetUserMedia || 
+// 	                    navigator.msGetUserMedia);
+	
+// 	navigator.getMedia = (navigator.getUserMedia ||
+// 				          navigator.webkitGetUserMedia || 
+// 				          navigator.mozGetUserMedia || 
+// 				          navigator.msGetUserMedia);
+	
 	//兼容浏览器的PeerConnection写法
-	var PeerConnection = (window.PeerConnection ||
-	                    window.webkitPeerConnection00 || 
-	                    window.webkitRTCPeerConnection || 
-	                    window.mozRTCPeerConnection);
+// 	var PeerConnection = (window.PeerConnection ||
+// 	                    window.webkitPeerConnection00 || 
+// 	                    window.webkitRTCPeerConnection || 
+// 	                    window.mozRTCPeerConnection);
+	
 
 	function start(){
 		// get a local stream, show it in a self-view and add it to be sent
 		var constraints = { "audio": true, "video": false };
 		navigator.mediaDevices.getUserMedia(constraints)
+// 		navigator.getMedia(constraints)
 		.then(function(stream) {
 			console.log("navigator~~~");
 			console.log(stream);
@@ -140,10 +149,11 @@
 					
 			peer.onicecandidate = function(event){
 				console.log("Offer onicecandidate~~~~");
+				console.log(answerSetting_isReady);
 				var candidate = event.candidate;
 				if(candidate){
 					var targetUser = $("#onLineUser").val();
-					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userID, "candidate" : event.candidate};
+					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userID, "candidate" : event.candidate, "answerSetting_isReady":answerSetting_isReady};
 					webSocket.send(JSON.stringify(rtc_user));	
 				}
 			};	
@@ -158,6 +168,7 @@
 	
 	function closeVideoCall() {
 		remoteVideo.srcObject = null;
+		answerSetting_isReady = false;
 		if (peer) {
 // 			peer.ontrack = null;
 // 			peer.onremovetrack = null;
@@ -286,11 +297,26 @@
 				case "sendAnswer"://接收candidate。
 	            	var answerJson = obj[msg_type];
 	    			const answerSDP = new RTCSessionDescription(answerJson.answerSDP);
+// 	    			test(answerSDP);
+					console.log("setRemote Answer");
+					console.log(answerJson);
 	    			peer.setRemoteDescription(answerSDP);
-	    			//傳送
+	    			answerSetting_isReady = true;
+	    			//傳送已經Answer設定好了
+	    			var rtc_user = {"msg_type" : "sendAnswerIsReady","targetUser":answerJson.originUser ,"answerSetting_isReady":answerSetting_isReady};
+	    			console.log(answerSetting_isReady);
+	    			webSocket.send(JSON.stringify(rtc_user));	    			
+					
+	    			//
 	    			var rtc_user = {"msg_type" : "sendCandidate","originUser":userID};
 	    			webSocket.send(JSON.stringify(rtc_user));
-                	break;                	             	
+// 	    			console.log("sendCandidate已送出~~~~~~~~~");
+                	break;
+				case "sendAnswerIsReady":
+					console.log("sendAnswerIsReady is true");
+					answerSetting_isReady = true;
+					console.log(answerSetting_isReady);
+					break;
 				default://取得關鍵字搜尋筆數(msg_type=showKeyword)
 					let keywordMap= new Map();
 					obj[msg_type].forEach(function(msgVO){
@@ -317,7 +343,7 @@
         //直接關閉websocket的連接
         webSocket.close();
     }
-    
+        
     function createAnswer(offerJson){
 		// get a local stream, show it in a self-view and add it to be sent
 		var constraints = { "audio": true, "video": false };
@@ -363,10 +389,11 @@
 					
 			peer.onicecandidate = function(event){
 				console.log("answer_onicecandidate~~~~");
+				console.log(answerSetting_isReady);
 				var candidate = event.candidate;
 				if(candidate){
 					var targetUser = offerJson.originUser;
-					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userID,"candidate" : event.candidate};
+					var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userID,"candidate" : event.candidate,"answerSetting_isReady":answerSetting_isReady};
 					webSocket.send(JSON.stringify(rtc_user));	
 				}
 			};	

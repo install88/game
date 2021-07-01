@@ -8,8 +8,8 @@
 	
     <select id="getAllFromLastMessage" parameterType="String" resultType="map">
 		SELECT * FROM CUSTOMER AS cus
-		RIGHT JOIN (SELECT * FROM message msg WHERE msg.msg_to = #{msg_to} and msg_time=(select max(msg_time) from message where msg_from=msg.msg_from)) AS m 
-		ON cus.userID = m.msg_from;    
+		RIGHT JOIN (SELECT * FROM message msg WHERE msg_time=(select max(msg_time) from message where msg_from=msg.msg_from and msg_to = #{msg_to})) AS m 
+		ON cus.userID = m.msg_from;		    
     </select>
     
     <select id="getConversationRecord" parameterType="String" resultType="map">

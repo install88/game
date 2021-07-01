@@ -14,6 +14,7 @@ public interface IContent {
 	public final static String SENDOFFER = "sendOffer";
 	public final static String SENDANSWER = "sendAnswer";
 	public final static String STORECANDIDATE = "storeCandidate";
-	public final static String SENDCANDIDATE = "sendCandidate";	
+	public final static String SENDCANDIDATE = "sendCandidate";
+	public final static String SENDANSWERISREADY = "sendAnswerIsReady";
 }
 
