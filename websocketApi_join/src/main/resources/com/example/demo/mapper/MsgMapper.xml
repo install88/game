@@ -22,7 +22,6 @@
     </select>
     
     <select id="getUnreadCount" parameterType="String" resultType="map">
-<!--         select msg_from,count(*) as msg_count from message where msg_to = #{msg_to} and msg_status=0 group by msg_from         -->
 		SELECT *,count(*) AS msg_count FROM CUSTOMER AS CUS
 		RIGHT JOIN (SELECT msg_from from MESSAGE where msg_to = #{msg_to} and msg_status=0) as MSG
 		on CUS.userID = MSG.msg_from

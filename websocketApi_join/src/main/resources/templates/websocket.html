@@ -79,15 +79,12 @@
 	var webSocket;
 	var commWebSocket;
 	let answerSetting_isReady = false;
-	
 	let localStream;
-
 	var peer;
 	//使用Google的stun服务器
 // 	var configuration = { "iceServers": [{ "url": "stun:stun.example.org" }] };
 	var configuration = { "iceServers": [{ "url": "stun:stun.1und1.de:3478" }] };
 
-	
 	//兼容浏览器的getUserMedia写法
 // 	var getUserMedia = (navigator.getUserMedia ||
 // 	                    navigator.webkitGetUserMedia || 
@@ -104,13 +101,10 @@
 // 	                    window.webkitPeerConnection00 || 
 // 	                    window.webkitRTCPeerConnection || 
 // 	                    window.mozRTCPeerConnection);
-	
-
 	function start(){
 		// get a local stream, show it in a self-view and add it to be sent
 		var constraints = { "audio": true, "video": false };
 		navigator.mediaDevices.getUserMedia(constraints)
-// 		navigator.getMedia(constraints)
 		.then(function(stream) {
 			console.log("navigator~~~");
 			console.log(stream);
@@ -122,21 +116,12 @@
 			});
 			
 			peer.ontrack = event => {
-// 			    this.remoteMediaStream = event.streams[0];
 				console.log("觸發ontrack offer端~~~~~~~~~");
 				console.log(event.streams[0]);
-// 			    remoteVideo.srcObject = event.stream;
 				remoteVideo.srcObject = event.streams[0];
 				remoteVideo.play();
 			};
-			
-// 			peer.addStream(stream);
-// 			peer.onaddstream = function(streamEvent){
-// 				console.log("Offer onaddstream~~~~~~~~~~~~~~~~~~~~~");
-// // 				console.log(streamEvent.stream);
-// 				remoteVideo.srcObject = streamEvent.stream;
-// 				remoteVideo.play();
-// 			};		
+				
 			localStream = stream;
 			//發送端處理offer
 			peer.createOffer().then(offer => {
@@ -180,9 +165,7 @@
 // 			peer.onnegotiationneeded = null;			
 			peer.close();
 			peer = null;
-		}		
-// 		remoteVideo.removeAttribute("src");
-// 		remoteVideo.removeAttribute("srcObject");		
+		}			
 		document.getElementById("hangup-button").disabled = true;
 	}	
 			
@@ -191,7 +174,7 @@
 			case "closed":
 		    case "failed":
 		    case "disconnected":		    	
-		    	console.log("監聽到關閉~~~~~~~~~~~~~~~~~~~~~~" + peer.iceConnectionState);
+		    	console.log("監聽到關閉 : " + peer.iceConnectionState);
 				closeVideoCall();
 		      	break;
 		}
@@ -199,10 +182,10 @@
 	
     if ("WebSocket" in window) {
     	//ws://localhost:8080/websocket/{userID}
-        webSocket = new WebSocket("ws://192.168.50.19:8080/websocket/" + userID);        
+        webSocket = new WebSocket("ws://192.168.50.20:8080/websocket/" + userID);        
         //連通之後觸發
         webSocket.onopen = function () {
-//             console.log("已經連通了websocket");
+			console.log("已經連通了websocket");
         };
 
 		//接收後端sever發送的消息
@@ -289,12 +272,14 @@
 // 	            	setMessageInnerHTML(msg_content);
                 	break;  
 				case "sendCandidate"://接收candidate。
-	            	var candidateJson = obj[msg_type];
-	    			console.log("有peer");
-	    			console.log(candidateJson.candidate);
-	    			peer.addIceCandidate(candidateJson.candidate);
+					console.log("有peer");
+// 	            	var candidateJson = obj[msg_type];	            	
+					obj[msg_type].forEach(function(candidateJson){
+						console.log(candidateJson.candidate);
+						peer.addIceCandidate(candidateJson.candidate);
+                	}); 				
                 	break;
-				case "sendAnswer"://接收candidate。
+				case "sendAnswer"://A端接收answer。
 	            	var answerJson = obj[msg_type];
 	    			const answerSDP = new RTCSessionDescription(answerJson.answerSDP);
 // 	    			test(answerSDP);
@@ -308,7 +293,7 @@
 	    			webSocket.send(JSON.stringify(rtc_user));	    			
 					
 	    			//
-	    			var rtc_user = {"msg_type" : "sendCandidate","originUser":userID};
+	    			var rtc_user = {"msg_type" : "sendCandidate","originUser":userID,"targetUser":answerJson.originUser};
 	    			webSocket.send(JSON.stringify(rtc_user));
 // 	    			console.log("sendCandidate已送出~~~~~~~~~");
                 	break;
@@ -360,22 +345,12 @@
 			});
 			
 			peer.ontrack = event => {
-// 			    this.remoteMediaStream = event.streams[0];
 				console.log("觸發ontrack Answer端~~~~~~~~~");
 				console.log(event.streams[0]);
-// 			    remoteVideo.srcObject = event.stream;
 				remoteVideo.srcObject = event.streams[0];
 				remoteVideo.play();
 			};			
-			
-// 			peer.addStream(stream);
-// 			peer.onaddstream = function(streamEvent){
-// 				console.log("Answeronaddstream~~~~~~~~~~~~~~~~~~~~~");
-// 				console.log(streamEvent.stream);
-// 				remoteVideo.srcObject = streamEvent.stream;
-// 				remoteVideo.play();		
-// 			};		
-// 			peer.ontrack = gotRemoteStream;						
+							
 			const offerSDP = new RTCSessionDescription(offerJson.offerSDP);
 			peer.setRemoteDescription(offerSDP);
 			//發送端處理offer
@@ -401,7 +376,7 @@
 			document.getElementById("hangup-button").disabled = false;
 		})
 		.catch(function(err) {
-		  /* 处理error */
+		  /* 處理error */
 		});				
 	}
 
@@ -458,12 +433,12 @@
         document.getElementById('inner-container').scrollTop = target_top;                    
     }      
     
-	function gotRemoteStream(e) {
-		  if (remoteVideo.srcObject !== e.streams[0]) {
-		    remoteVideo.srcObject = e.streams[0];
-		    console.log("pc2 received remote stream");
-		  }
-		}    
+// 	function gotRemoteStream(e) {
+// 		  if (remoteVideo.srcObject !== e.streams[0]) {
+// 		    remoteVideo.srcObject = e.streams[0];
+// 		    console.log("pc2 received remote stream");
+// 		  }
+// 		}    
     //當選取清單變動時，查詢與該User的聊天紀錄      
     $(document).ready(function(){
         $("#onLineUser").change(function(){
