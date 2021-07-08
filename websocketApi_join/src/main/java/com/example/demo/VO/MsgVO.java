@@ -11,6 +11,7 @@ public class MsgVO {
 	private String msg_content;
 	private Integer msg_status;
 	private Timestamp msg_time;
+	private String msg_img;
 	
 	public Integer getMsg_ID() {
 		return msg_ID;
@@ -60,5 +61,11 @@ public class MsgVO {
 	public void setMsg_to_user_name(String msg_to_user_name) {
 		this.msg_to_user_name = msg_to_user_name;
 	}
-	
+	public String getMsg_img() {
+		return msg_img;
+	}
+	public void setMsg_img(String msg_img) {
+		this.msg_img = msg_img;
+	}
+
 }

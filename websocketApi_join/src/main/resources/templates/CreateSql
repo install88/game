@@ -13,12 +13,13 @@ CREATE TABLE `message` (
   `msg_id` int(11) NOT NULL AUTO_INCREMENT,
   `msg_from` varchar(100) NOT NULL,
   `msg_to` varchar(100) NOT NULL,
-  `msg_content` varchar(100) NOT NULL,
+  `msg_content` varchar(100) DEFAULT NULL,
   `msg_status` int(11) NOT NULL,
   `msg_time` timestamp NOT NULL DEFAULT current_timestamp(),
+  `msg_img` longblob DEFAULT NULL COMMENT '圖片',
   PRIMARY KEY (`msg_id`),
   KEY `message_FK` (`msg_from`),
   KEY `message_FK_1` (`msg_to`),
   CONSTRAINT `message_FK` FOREIGN KEY (`msg_from`) REFERENCES `customer` (`userID`),
   CONSTRAINT `message_FK_1` FOREIGN KEY (`msg_to`) REFERENCES `customer` (`userID`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8;

@@ -11,6 +11,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,16 +74,29 @@ public class WebSocketController {
             Map<String,Object> ownInfoMap = msgService.getOwnInfo(userID);
             this.username = (String) ownInfoMap.get("username");
             
-            //查詢給自己的訊息            
-            List<Map<String,Object>> lastMsg_list = msgService.getAllFromLastMessage(userID);
-            Map<String, Object> lastMsg_map = new HashMap<>();
-            lastMsg_map.put(IContent.SHOWLASTMSG, lastMsg_list);
-            sendMessageTo(JSON.toJSONString(lastMsg_map), userID);
             //查詢未讀訊息count
             List<Map<String, Object>> msg_count_list = msgService.getUnreadCount(userID);
             Map<String, Object> msg_count_map = new HashMap<>();
             msg_count_map.put(IContent.SHOWMSGCOUNT, msg_count_list);
-            sendMessageTo(JSON.toJSONString(msg_count_map), userID);                              
+            sendMessageTo(JSON.toJSONString(msg_count_map), userID);              
+            
+            //查詢給自己的訊息            
+//            List<Map<String,Object>> lastMsg_list = msgService.getAllFromLastMessage(userID);
+            List<MsgVO> lastMsg_list = msgService.getAllFromLastMessage(userID);
+            Map<String, Object> lastMsg_map = new HashMap<>();
+            lastMsg_map.put(IContent.SHOWLASTMSG, lastMsg_list);
+//            for(int i=0;i<lastMsg_list.size();i++) {
+//            	if(null != lastMsg_list.get(i).getMsg_img()) {
+//            		ByteBuffer buf = ByteBuffer.wrap(lastMsg_list.get(i).getMsg_img());
+//            		sendImgMessageTo(buf,userID);
+//            	}else {
+//                    Map<String, Object> lastMsg_map = new HashMap<>();
+//                    lastMsg_map.put(IContent.SHOWLASTMSG, lastMsg_list.get(i));
+//                    sendMessageTo(JSON.toJSONString(lastMsg_map), userID);
+//            	}
+//            }
+            sendMessageTo(JSON.toJSONString(lastMsg_map), userID);
+                            
         } catch (IOException e) {
         	//上線的時候發生了錯誤
         	System.out.println(e.getMessage());
@@ -118,7 +132,7 @@ public class WebSocketController {
      * @param message 消息
      * @param session 会话
      */
-    @OnMessage
+    @OnMessage(maxMessageSize = 10240000)
     public void onMessage(String message, Session session) {
         try {
         	msgService = applicationContext.getBean(MsgService.class);        	
@@ -130,9 +144,16 @@ public class WebSocketController {
                     MsgVO msgVO = new MsgVO();
                     msgVO.setMsg_from(jsonObject.getString("msg_from"));
                     msgVO.setMsg_to(jsonObject.getString("msg_to"));
-                    msgVO.setMsg_content(jsonObject.getString("msg_content"));            
+//                    msgVO.setMsg_content(jsonObject.getString("msg_content"));            
                     msgVO.setMsg_status(jsonObject.getInteger("msg_status"));
-                    msgService.saveMsg(msgVO);                
+                    if(null != jsonObject.getString("msg_content")) {
+                    	msgVO.setMsg_content(jsonObject.getString("msg_content"));
+                    	msgService.msgSave(msgVO);
+                    }else {
+                    	msgVO.setMsg_img(jsonObject.getString("msg_img"));            
+                    	msgService.msgImgSave(msgVO);      
+                    }
+                                    
                     //將訊息推撥至對方
                     Map<String, Object> msg_receive_map = new HashMap<>();
                     //呼叫getMemberInfoById
@@ -149,6 +170,7 @@ public class WebSocketController {
                     	msg_receive_map.put(IContent.RECEIVE_OTHERS_MSG, msgVO);
                     	sendMessageTo(JSON.toJSONString(msg_receive_map), msgVO.getMsg_to());
                     }
+                    
                     //將訊息推播至自己
                     Map<String, Object> msg_receive_own_map = new HashMap<>();
                     msg_receive_own_map.put(IContent.RECEIVE_OWN_MSG, msgVO);                    
@@ -157,7 +179,7 @@ public class WebSocketController {
             	case IContent.GETMESSAGE://查詢與對方的聊天紀錄                	
                     String msg_from = jsonObject.getString("msg_from");
                     String msg_to = jsonObject.getString("msg_to");
-                    List<Map<String,Object>> msg_record_list = msgService.getConversationRecord(msg_from, msg_to);
+                    List<MsgVO> msg_record_list = msgService.getConversationRecord(msg_from, msg_to);
                     Map<String, Object> msg_record_map = new HashMap<>();
                     msg_record_map.put(IContent.SHOWRECORD, msg_record_list);                
                     sendMessageTo(JSON.toJSONString(msg_record_map), msg_to);                
@@ -262,6 +284,7 @@ public class WebSocketController {
                     break;
             }                               
         } catch (Exception e) {
+        	System.out.println(e.getMessage());
 //            log.info("發生錯誤);
         }
     }
@@ -271,6 +294,13 @@ public class WebSocketController {
     	WebSocketController itemTest = clients.get(ToUserName);
 		itemTest.session.getAsyncRemote().sendText(message);    	
     }
+    
+    //將圖片送至指定用戶
+    public void sendImgMessageTo(ByteBuffer message, String ToUserName) throws IOException {
+    	WebSocketController itemTest = clients.get(ToUserName);
+//		itemTest.session.getAsyncRemote().sendText(message);
+		itemTest.session.getAsyncRemote().sendBinary(message);
+    }    
     
     //廣播給在線上的所有User
     public void sendMessageAll(String message) throws IOException {

@@ -17,18 +17,30 @@ public class MsgService {
     private MsgMapper msgMapper;
     
 	@Transactional
-    public void saveMsg(MsgVO msgVO) {
+    public void msgSave(MsgVO msgVO) {
     	msgMapper.msgSave(msgVO);
     }
+	
+	@Transactional
+    public void msgImgSave(MsgVO msgVO) {
+    	msgMapper.msgImgSave(msgVO);
+    }	
     
-    public List<Map<String,Object>> getAllFromLastMessage(String msg_to) {
+//    public List<Map<String,Object>> getAllFromLastMessage(String msg_to) {
+//    	return msgMapper.getAllFromLastMessage(msg_to);
+//    }    
+    public List<MsgVO> getAllFromLastMessage(String msg_to) {
     	return msgMapper.getAllFromLastMessage(msg_to);
-    }    
+    }        
+
+//    public List<Map<String,Object>> getConversationRecord(String msg_from, String msg_to) {
+//    	return msgMapper.getConversationRecord(msg_from, msg_to);
+//    }
     
-    public List<Map<String,Object>> getConversationRecord(String msg_from, String msg_to) {
+    public List<MsgVO> getConversationRecord(String msg_from, String msg_to) {
     	return msgMapper.getConversationRecord(msg_from, msg_to);
     }   
-    
+           
     public List<Map<String,Object>> getUnreadCount(String msg_to) {
     	return msgMapper.getUnreadCount(msg_to);
     }     

@@ -16,12 +16,15 @@ public interface MsgMapper{
      */
     //insert訊息至資料庫
     int msgSave(MsgVO msgVO);
+    int msgImgSave(MsgVO msgVO);
         
     //User登入時點開好友清單，只顯示其好友們最新一筆資料(像line一樣)
-    List<Map<String,Object>> getAllFromLastMessage(String msg_to);  
+//    List<Map<String,Object>> getAllFromLastMessage(String msg_to);
+    List<MsgVO> getAllFromLastMessage(String msg_to);
         
     //點開對象聊天室後，查詢與該對象的聊天紀錄
-    List<Map<String,Object>> getConversationRecord(String msg_from, String msg_to);
+//    List<Map<String,Object>> getConversationRecord(String msg_from, String msg_to);
+    List<MsgVO> getConversationRecord(String msg_from, String msg_to);
     
     //將該好友訊息狀態從未讀改成已讀
     int msgUpdateStatus(String msg_from,String msg_to,Timestamp msg_time);
