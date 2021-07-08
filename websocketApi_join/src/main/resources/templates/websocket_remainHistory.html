@@ -531,33 +531,30 @@
 // 		  }
 // 		}    
     //當選取清單變動時，查詢與該User的聊天紀錄      
-    $(document).ready(function(){
-        $("#onLineUser").change(function(){
-        	document.getElementById('message').
-        	innerHTML="";
-        	var msg_from = $("#onLineUser").val();
-            var message = {
-                    "msg_from": msg_from,
-                    "msg_to": userID,
-                    "msg_type" : "getMessage"
-            };
-            webSocket.send(JSON.stringify(message));            
-            //將未讀訊息數量改成0
-            if(userMap.has(msg_from)){
-            	userMap.set(msg_from,0);	
-            } 
-            start();
-        });
-        
-//         $("#imgInp").change(function(){
-//             //當檔案改變後，做一些事 
-//            readURL(this);   // this代表<input id="imgInp">
-//          });   
-        $("#progressbarTWInput").change(function(){
-        	$("#preview_progressbarTW_imgs").html(""); // 清除預覽
+	$(document).ready(function(){
+	    $("#onLineUser").change(function(){
+	    	document.getElementById('message').
+	    	innerHTML="";
+	    	var msg_from = $("#onLineUser").val();
+	        var message = {
+	                "msg_from": msg_from,
+	                "msg_to": userID,
+	                "msg_type" : "getMessage"
+	        };
+	        webSocket.send(JSON.stringify(message));            
+	        //將未讀訊息數量改成0
+	        if(userMap.has(msg_from)){
+	        	userMap.set(msg_from,0);	
+	        } 
+	        start();
+	    });
+	    
+	    $("#progressbarTWInput").change(function(){
+	    	$("#preview_progressbarTW_imgs").html(""); // 清除預覽
 			readURL(this);
 		});        
-    });  
+	});  
+
 //     function readURL(input){
 //     	if(input.files && input.files[0]){
 // 			var reader = new FileReader();
@@ -568,127 +565,127 @@
 //     	}
 //     }    
     
-    function readURL(input){
-		if (input.files && input.files.length >= 0) {
+	function readURL(input){
+		if(!isCanvasSupported){
+			console.log("無法用canvas");
+		}else{
+			compress(input, function(base64Img){
+				$("#csimg").attr("src",base64Img);
+				console.log(base64Img);
+				var message = {            
+						"msg_from": userID,
+	    	            "msg_to": $("#onLineUser").val(),
+	                    "msg_img": base64Img,
+	                    "msg_status" : 0,
+	                    "msg_type" : "save"
+		            };  		
+				webSocket.send(JSON.stringify(message));				
+				// 如需儲存  或 把base64轉成圖片  ajax提交後臺處理
+				// 我這裡採用ajax方式 自己封裝的 
+// 				ajax('qnl_app/tes_ac_img',{'base64Img':base64Img},function(date){
+// 					console.log(JSON.stringify(date));
+// 				});
+			});
+		}		
+	}
+
+// 	function selectImg(event) {
+// 	    var f = event.files[0];
+// 	    if (f==undefined) {
+// 	        return;
+// 	    }
+// 	    var name = f.name;
+// 	    var size=f.size;
+// 	    alert(size);
+// 		if(!isCanvasSupported){
+// 			console.log("無法用canvas");
+// 		}else{
+// 			compress(event, function(base64Img){
+// 				$("#csimg").attr("src",base64Img);
+// 				console.log(base64Img);
+				// 如需儲存  或 把base64轉成圖片  ajax提交後臺處理
+				// 我這裡採用ajax方式 自己封裝的 
+// 				ajax('qnl_app/tes_ac_img',{'base64Img':base64Img},function(date){
+// 					console.log(JSON.stringify(date));
+// 				});
+// 			});
+// 		}	    
+// 	}	
+	
+	//判斷是否存在畫布
+	function isCanvasSupported() {
+		var elem = document.createElement('canvas');
+		return !!(elem.getContext && elem.getContext('2d'));
+	}
+	
+	function compress(input, callback) {
+		if(input.files && input.files.length >= 0) {
 			for(var i = 0; i < input.files.length; i ++){
 				var reader = new FileReader();
 				reader.onload = function (e) {
-    	            var message = {            
-    	                    "msg_from": userID,
-    	                    "msg_to": $("#onLineUser").val(),
-    	                    "msg_img": e.target.result,
-    	                    "msg_status" : 0,
-    	                    "msg_type" : "save"
-    	            };  		
-					webSocket.send(JSON.stringify(message));					
-// 					var canvas = document.getElementById('c1');
-// 					var ctx = canvas.getContext('2d');
-// 					var image = new Image();
-// 					image.src = e.target.result;
-// 					image.onload = function (e) {
-// 						let imageW = image.width;
-// 						let imageH = image.height;
-// 						let afterW = 1024;
-// 						let afterH = afterW * imageH / imageW;
-// 						canvas.width = imageW;
-// 						canvas.height = imageH;
-// 						console.log("~~~~~~~~");
-// 						console.log(imageW);
-// 						ctx.clearRect(0,0, canvas.width, canvas.height);
-// 						ctx.drawImage(image, 0,0);
-// 						ctx.drawImage(image, 0,0, 200, c.height);
-// 						ctx.drawImage(image, 0, 0, afterW, afterH);
-// 						ctx.drawImage(image, 20, 30, 50, 60, 0, 0, afterW, afterH);
-// 						let data = canvas.toDataURL('image/jpg', 0.8);
-// 						console.log(data);						
-						// - 轉成 blob 並在回撥中進行下一步操作
-// 	 					canvas.toBlob(function (blob) {
-// 		 					// 操作 blob，做上傳之類的
-// 							console.log("~~~~~~~~~~~~~~~~~~~~");
-// 							console.log(blob)	 						
-// 							let reader2 = new FileReader();
-// 							reader2.readAsDataURL(blob, 'utf-8');
-// 							reader2.onload = (e) => {
-// // 	 		                    console.log("----",JSON.parse(reader.result));
-// 	 		                    console.log(e.target.result);
-// // 	 							$("#preview_progressbarTW_imgs").append(image2);
-// 			    	            var message = {            
-// 			    	                    "msg_from": userID,
-// 			    	                    "msg_to": $("#onLineUser").val(),
-// 			    	                    "msg_img": e.target.result,
-// 			    	                    "msg_status" : 0,
-// 			    	                    "msg_type" : "sendImg"
-// 			    	            };  		
-// 								webSocket.send(JSON.stringify(message));	 		                    
-// 	 		                }	 						
-// 	 					}, 'image/jpg', 0.8)						
-// 					};
-					
-					
-// 					let image = new Image()
-// 					image.src = e.target.result;
-// 					console.log("~~~~~~~~~~");
-// // 					console.log(image.src);
-
-// 					// 建立 canvas 節點
-// 					let canvas = document.createElement('canvas');
-// 					// 獲取 canvas 操作物件
-// 					let ctx = canvas.getContext('2d');
-					
-// 					// 讀取原始圖片尺寸
-// 					let imageW = image.width;
-// 					let imageH = image.height;
-// 					// 指定輸出圖片尺寸, 按比例，比如限制寬是1024
-// 					let afterW = 1024;
-// 					let afterH = afterW * imageH / imageW;
-					
-// 					// 設定 canvas 畫布大小
-// 					canvas.width = imageW;
-// 					canvas.height = imageH;
-					
-// 					// -----進行處理
-// 					// 不壓縮
-// 					// drawImage(image, dx, dy)
-// 					ctx.drawImage(image, 0,0);
-					
-					// 壓縮到指定尺寸
-// 					ctx.drawImage(image, 0, 0, afterW, afterH);
-					
-					// 按位置擷取並壓縮
-// 					ctx.drawImage(image, 20, 30, 50, 60, 0, 0, afterW, afterH);
-					
-					// -----輸出結果
-					// 型別預設png，可選jpeg、webp
-					// - 獲取處理後的 base64 資料
-// 					let data = canvas.toDataURL('image/jpg', 0.8)
-// 					console.log(data)
-					
-					// - 轉成 blob 並在回撥中進行下一步操作
-// 					canvas.toBlob(function (blob) {
-// 					  // 操作 blob，做上傳之類的
-// 						console.log(blob)
-// 					}, 'image/webp', 0.8)					
-//     	        	var img = $("<img width='300' height='200'>").attr('src', e.target.result);
-//     	        	$("#preview_progressbarTW_imgs").append(canvas);
-//     	        	var byteArray = new Uint8Array(e.target.result);
-//     	        	console.log(e.target.result);
-//     	        	webSocket.send(JSON.stringify(byteArray.buffer));
-//     	        	webSocket.send(e.target.result); 	    
-//     	            var message = {            
-//     	                    "msg_from": userID,
-//     	                    "msg_to": $("#onLineUser").val(),
-//     	                    "msg_img": e.target.result,
-//     	                    "msg_status" : 0,
-//     	                    "msg_type" : "sendImg"
-//     	            };    	    
-//     	            webSocket.send(JSON.stringify(message));
-    	      	}
-				reader.readAsDataURL(input.files[i]);
-    	    }
+					var image = $('<img/>');
+					image.load(function () {
+						console.log("開始壓縮");
+						var canvas = document.createElement('canvas');
+						var context = canvas.getContext('2d');
+						// 等比例缩放圖片
+						var scale = 1;
+						var tt = 800; // 可以根据具体的要求去设定
+						if (this.width > tt || this.height > tt) {
+							if (this.width > this.height) {
+								scale = tt / this.width;
+							}else {
+								scale = tt / this.height;
+							}
+						}
+						context.width = this.width * scale;
+						context.height = this.height * scale; // 计算等比缩小后图片					
+						canvas.width = context.width;
+						canvas.height = context.height;					 
+						context.drawImage(this, 0, 0, context.width, context.height);  // 加载图片
+						var data = canvas.toDataURL('image/jpeg');
+					 	//壓縮完成執行回撥
+				     	callback(data);
+					});		
+					image.attr('src', e.target.result);
+	    	    }
+				reader.readAsDataURL(input.files[i]);	    
+			}
 		}else{
-			var noPictures = $("<p>目前沒有圖片</p>");
+			let noPictures = $("<p>目前沒有圖片</p>");
 			$("#preview_progressbarTW_imgs").append(noPictures);
-    	}
-	}    
+		}
+		
+		
+// 		reader.onload = function (e) {
+// 			var image = $('<img/>');
+// 			image.load(function () {
+// 				console.log("開始壓縮");
+// 				var canvas = document.createElement('canvas');
+// 				var context = canvas.getContext('2d');
+// 				// 等比例缩放圖片
+// 				var scale = 1;
+// 				var tt = 800; // 可以根据具体的要求去设定
+// 				if (this.width > tt || this.height > tt) {
+// 					if (this.width > this.height) {
+// 						scale = tt / this.width;
+// 					}else {
+// 						scale = tt / this.height;
+// 					}
+// 				}
+// 				context.width = this.width * scale;
+// 				context.height = this.height * scale; // 计算等比缩小后图片					
+// 				canvas.width = context.width;
+// 				canvas.height = context.height;					 
+// 				context.drawImage(this, 0, 0, context.width, context.height);  // 加载图片
+// 				var data = canvas.toDataURL('image/jpeg');
+// 			 	//壓縮完成執行回撥
+// 		     	callback(data);
+// 			});
+// 			image.attr('src', e.target.result);
+// 		};
+// 		reader.readAsDataURL(file);
+		
+	}	
 </script>
 </html>
