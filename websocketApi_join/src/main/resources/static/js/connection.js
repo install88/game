@@ -91,14 +91,10 @@ if ("WebSocket" in window) {
             	}    
             	break; 
 			case "receive_own_msg"://接收自己訊息。
-            	var msgVO = obj[msg_type];
-				if(msgVO.msg_content){
-					console.log("msg_content有進來");	
-					setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);	
-				}else{
-					console.log("msg_img有進來");
-					setImgInnerHTML(msgVO.msg_img);
-				}				 
+            	var serverReceive = obj[msg_type];
+            	if(serverReceive){
+            		setMessageInnerHTML("O");
+            	}			 
             	break;                 	                	                	                	
 			case "broadcast"://接收廣播訊息。
             	var msg_content = obj[msg_type];
@@ -176,9 +172,16 @@ function send() {
     	message["msg_type"] = "broadcast";
     }else{
     	message["msg_type"] = "save";
-    }        
+    }    
+    
+    //放到自己的對話框裡面
+	setMessageInnerHTML(message.msg_content);
+	scroll_to_bottom();    
+	    
   	//發送訊息至後端server
     webSocket.send(JSON.stringify(message));
+    
+    //發送訊息欄清空
     $("#text").val("");
 }
 
@@ -225,4 +228,10 @@ function setMessageInnerHTML_adjustBar(innerHTML) {
     document.getElementById('message').innerHTML += "<div id='adjust_bar'>" + innerHTML + '<div/>';
     var target_top = $("#adjust_bar").offset().top;
     document.getElementById('inner-container').scrollTop = target_top;                    
+}   
+
+//送出訊息時，scroll bar滑動至底。
+function scroll_to_bottom(){
+	let div = document.getElementById('inner-container');
+	div.scrollTop = div.scrollHeight;                   
 }   

@@ -335,14 +335,18 @@
 	            	}    
                 	break; 
 				case "receive_own_msg"://接收自己訊息。
-	            	var msgVO = obj[msg_type];
-					if(msgVO.msg_content){
-						console.log("msg_content有進來");	
-						setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);	
-					}else{
-						console.log("msg_img有進來");
-						setImgInnerHTML(msgVO.msg_img);
-					}				
+	            	var serverReceive = obj[msg_type];
+	            	console.log(msgVO);
+	            	if(serverReceive){
+	            		setMessageInnerHTML("O");
+	            	}
+//					if(msgVO.msg_content){
+//						console.log("msg_content有進來");	
+//						setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);	
+//					}else{
+//						console.log("msg_img有進來");
+//						setImgInnerHTML(msgVO.msg_img);
+//					}				
 // 	            	setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);  
                 	break;                 	                	                	                	
 				case "broadcast"://接收廣播訊息。

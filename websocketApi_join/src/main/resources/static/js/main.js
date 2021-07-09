@@ -44,6 +44,7 @@ function readURL(input){
 	}else{
 		compress(input, function(base64Img){
 			console.log(base64Img);
+			setImgInnerHTML(base64Img);
 			var message = {            
 					"msg_from": userID,
     	            "msg_to": $("#onLineUser").val(),

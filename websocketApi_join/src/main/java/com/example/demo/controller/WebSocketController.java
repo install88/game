@@ -143,15 +143,12 @@ public class WebSocketController {
             	case IContent.SAVE://訊息儲存至DB
                     MsgVO msgVO = new MsgVO();
                     msgVO.setMsg_from(jsonObject.getString("msg_from"));
-                    msgVO.setMsg_to(jsonObject.getString("msg_to"));
-//                    msgVO.setMsg_content(jsonObject.getString("msg_content"));            
+                    msgVO.setMsg_to(jsonObject.getString("msg_to"));            
                     msgVO.setMsg_status(jsonObject.getInteger("msg_status"));
                     if(null != jsonObject.getString("msg_content")) {
                     	msgVO.setMsg_content(jsonObject.getString("msg_content"));
-                    	msgService.msgSave(msgVO);
                     }else {
                     	msgVO.setMsg_img(jsonObject.getString("msg_img"));            
-                    	msgService.msgImgSave(msgVO);      
                     }
                                     
                     //將訊息推撥至對方
@@ -173,8 +170,16 @@ public class WebSocketController {
                     
                     //將訊息推播至自己
                     Map<String, Object> msg_receive_own_map = new HashMap<>();
-                    msg_receive_own_map.put(IContent.RECEIVE_OWN_MSG, msgVO);                    
+//                    msg_receive_own_map.put(IContent.RECEIVE_OWN_MSG, msgVO);
+                    msg_receive_own_map.put(IContent.RECEIVE_OWN_MSG, true);
                     sendMessageTo(JSON.toJSONString(msg_receive_own_map), msgVO.getMsg_from());
+                    
+                    //儲存訊息至DB
+                    if(null != jsonObject.getString("msg_content")) {
+                    	msgService.msgSave(msgVO);
+                    }else {            
+                    	msgService.msgImgSave(msgVO);      
+                    }                    
                     break;
             	case IContent.GETMESSAGE://查詢與對方的聊天紀錄                	
                     String msg_from = jsonObject.getString("msg_from");
