@@ -94,6 +94,7 @@ if ("WebSocket" in window) {
             	var serverReceive = obj[msg_type];
             	if(serverReceive){
             		setMessageInnerHTML("O");
+            		scroll_to_bottom();
             	}			 
             	break;                 	                	                	                	
 			case "broadcast"://接收廣播訊息。

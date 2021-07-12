@@ -34,7 +34,7 @@ $(document).ready(function(){
     
     $("#progressbarTWInput").change(function(){
     	$("#preview_progressbarTW_imgs").html(""); // 清除預覽
-		readURL(this);
+		readURL(this);		
 	});        
 });  
 
