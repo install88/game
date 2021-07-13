@@ -98,8 +98,19 @@ if ("WebSocket" in window) {
             	}			 
             	break;                 	                	                	                	
 			case "broadcast"://接收廣播訊息。
-            	var msg_content = obj[msg_type];
-            	setMessageInnerHTML(msg_content);
+            	var msgVO = obj[msg_type];
+            	if(msgVO.msg_from != userID){
+					if(msgVO.msg_content){
+						console.log("msg_content有進來");	
+						setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);	
+					}else{
+						console.log("msg_img有進來");
+						setImgInnerHTML(msgVO.msg_img);
+					}            	            	
+            	}else{
+            		scroll_to_bottom();
+            	}            	
+//            	setMessageInnerHTML(msg_content);
             	break;    
 			case "sendOffer"://接收offer。
             	var offerJson = obj[msg_type];
@@ -221,7 +232,7 @@ function setImgInnerHTML(innerHTML) {
 	msg_img.width = 200;
 	msg_img.height = 200;
 	msg_div.append(msg_img);
-    $("#message").append(msg_div);        
+    $("#message").append(msg_div);
 }    
 
 //scroll bar滑動至第一則未讀訊息上。

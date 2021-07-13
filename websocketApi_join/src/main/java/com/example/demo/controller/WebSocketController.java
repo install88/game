@@ -203,7 +203,15 @@ public class WebSocketController {
                     break;                    
             	case IContent.BROADCAST://廣播訊息送至在線人員
                     Map<String, Object> msg_broadcast_map = new HashMap<>();
-                    msg_broadcast_map.put(IContent.BROADCAST, jsonObject.getString("msg_content"));
+                    MsgVO broadcast_msgVO = new MsgVO();
+                    broadcast_msgVO.setMsg_from(jsonObject.getString("msg_from"));
+                    broadcast_msgVO.setMsg_from_user_name(clients.get(jsonObject.getString("msg_from")).username);
+                    if(null != jsonObject.getString("msg_content")) {
+                    	broadcast_msgVO.setMsg_content(jsonObject.getString("msg_content"));
+                    }else {            
+                    	broadcast_msgVO.setMsg_img(jsonObject.getString("msg_img"));     
+                    }                     
+                    msg_broadcast_map.put(IContent.BROADCAST, broadcast_msgVO);
             		sendMessageAll(JSON.toJSONString(msg_broadcast_map));
             		break;
             	case IContent.SENDOFFER://從A端送offer至B端
@@ -224,12 +232,9 @@ public class WebSocketController {
             			sendMessageTo(JSON.toJSONString(msg_candidate_map), jsonObject.getString("targetUser"));                    	
                     }else{
                         if(null != clients_candidates.get(jsonObject.getString("originUser"))) {
-//                        	clients_candidates.get(jsonObject.get("originUser")).add(msg_candidate_map);
                         	clients_candidates.get(jsonObject.get("originUser")).add(jsonObject);
                         }else {
                         	ArrayList<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-//                        	list.add(msg_candidate_map);
-//                        	clients_candidates.put((String) jsonObject.get("originUser"), list);
                         	list.add(jsonObject);
                         	clients_candidates.put((String) jsonObject.get("originUser"), list);
                         }                       	
@@ -257,27 +262,11 @@ public class WebSocketController {
             			Map<String, Object> originUser_map = new HashMap<>();
             			originUser_map.put(IContent.SENDCANDIDATE, origin_cadidate_map_list);
             			sendMessageTo(JSON.toJSONString(originUser_map), (String)jsonObject.get("targetUser"));            				
-        			}            			            			            	
-            		
-            		
-//            		for(int i=0;i<origin_cadidate_map_list.size();i++) {
-//            			Map<String, Object> origin_map = origin_cadidate_map_list.get(i);
-//            			JSONObject origin_json = (JSONObject) origin_map.get(IContent.SENDCANDIDATE);
-//            			sendMessageTo(JSON.toJSONString(origin_map), origin_json.getString("targetUser"));
-            			
-            			//刪除target_cadidate
-//            			ArrayList<Map<String, Object>> target_cadidate_map_list = clients_candidates.get(origin_json.getString("targetUser"));
-//            			for(int j=0; j<target_cadidate_map_list.size(); j++) {
-//            				Map<String, Object> target_map = target_cadidate_map_list.get(j);
-//            				JSONObject target_json = (JSONObject) target_map.get(IContent.SENDCANDIDATE);
-//            				sendMessageTo(JSON.toJSONString(target_map), target_json.getString("targetUser"));
-//            				target_cadidate_map_list.remove(j);
-//            				j--;
-//            			}            				
-            			//刪除origin_cadidate
-//            			origin_cadidate_map_list.remove(i);
-//            			i--;
-//            		}
+        			}       
+        			
+        			//remove candidate資訊
+        			clients_candidates.remove(jsonObject.get("originUser"));
+        			clients_candidates.remove(jsonObject.get("targetUser"));        			
             		break;
             	case IContent.SENDANSWERISREADY://A端告知B端，setRemoteDescription(answerSDP)處理好了
                     Map<String, Object> msg_answer_is_ready_map = new HashMap<>();

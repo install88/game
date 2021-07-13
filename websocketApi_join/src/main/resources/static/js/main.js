@@ -45,13 +45,20 @@ function readURL(input){
 		compress(input, function(base64Img){
 			console.log(base64Img);
 			setImgInnerHTML(base64Img);
+		    let selectText = $("#onLineUser").find("option:selected").text();
 			var message = {            
 					"msg_from": userID,
-    	            "msg_to": $("#onLineUser").val(),
+    	            "msg_to": selectText,
                     "msg_img": base64Img,
                     "msg_status" : 0,
                     "msg_type" : "save"
-	        };  		
+	        };  	
+	        			                    
+		    if(selectText == "ALL"){
+		    	message["msg_type"] = "broadcast";
+		    }else{
+		    	message["msg_type"] = "save";
+		    }    									
 			webSocket.send(JSON.stringify(message));				
 		});
 	}		
