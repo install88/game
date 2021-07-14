@@ -16,5 +16,6 @@ public interface IContent {
 	public final static String STORECANDIDATE = "storeCandidate";
 	public final static String SENDCANDIDATE = "sendCandidate";
 	public final static String SENDANSWERISREADY = "sendAnswerIsReady";
+	public final static String REJECT = "reject";	
 }
 

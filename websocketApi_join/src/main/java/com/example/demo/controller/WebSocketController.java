@@ -160,7 +160,7 @@ public class WebSocketController {
 //                  HttpEntity<String> entity = new HttpEntity<String>(headers);
 //                  String strbody = restTemplate.exchange(url, HttpMethod.GET, entity,String.class).getBody();
 //                  JSONObject jsonObject2 = JSON.parseObject(strbody);
-//                  JSONObject usernameTest = jsonObject2.getJSONObject("RET");                    
+//                  JSONObject usernameTest = jsonObject2.getJSONObject("RET");
                                         
                     if(clients.get(msgVO.getMsg_to())!= null) {                    	
                     	msgVO.setMsg_from_user_name(clients.get(msgVO.getMsg_from()).username);
@@ -170,7 +170,6 @@ public class WebSocketController {
                     
                     //將訊息推播至自己
                     Map<String, Object> msg_receive_own_map = new HashMap<>();
-//                    msg_receive_own_map.put(IContent.RECEIVE_OWN_MSG, msgVO);
                     msg_receive_own_map.put(IContent.RECEIVE_OWN_MSG, true);
                     sendMessageTo(JSON.toJSONString(msg_receive_own_map), msgVO.getMsg_from());
                     
@@ -217,6 +216,7 @@ public class WebSocketController {
             	case IContent.SENDOFFER://從A端送offer至B端
                     Map<String, Object> msg_offer_map = new HashMap<>();
 //                    msg_offer_map.put(SENDOFFER, jsonObject.getString("offerSDP"));
+                    jsonObject.put("originUserName", clients.get(jsonObject.get("originUser")).username);
                     msg_offer_map.put(IContent.SENDOFFER, jsonObject);
             		sendMessageTo(JSON.toJSONString(msg_offer_map), jsonObject.getString("targetUser"));
             		System.out.println("SENDOFFER");
@@ -272,6 +272,11 @@ public class WebSocketController {
                     Map<String, Object> msg_answer_is_ready_map = new HashMap<>();
                     msg_answer_is_ready_map.put(IContent.SENDANSWERISREADY, "");            		
             		sendMessageTo(JSON.toJSONString(msg_answer_is_ready_map), jsonObject.getString("targetUser"));
+            		break;            		
+            	case IContent.REJECT:
+            		Map<String, Object> msg_reject_map = new HashMap<>();
+            		msg_reject_map.put(IContent.REJECT, jsonObject);
+            		sendMessageTo(JSON.toJSONString(msg_reject_map), jsonObject.getString("targetUser"));
             		break;
                 default://令訊息狀態改為已讀          	                    
                     msgService.msgUpdateStatus(jsonObject.getString("msg_from"), jsonObject.getString("msg_to")); 

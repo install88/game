@@ -114,7 +114,24 @@ if ("WebSocket" in window) {
             	break;    
 			case "sendOffer"://接收offer。
             	var offerJson = obj[msg_type];
-            	createAnswer(offerJson);
+            	console.log("接收offer");
+            	//之後要加若已在通話，要回傳給撥打人告知他已在通話(用answerSetting_isReady試試看)
+            	console.log(answerSetting_isReady);
+            	if(answerSetting_isReady){
+            		var rtc_user = {"msg_type" : "reject","targetUser":offerJson.originUser,"msg_content": "通話中"};
+            		webSocket.send(JSON.stringify(rtc_user));
+            		return;
+            	}          
+            	  	
+            	//判斷是否要接收通話
+				let yes = confirm(offerJson.originUserName + '要與你通話');				
+				if (yes){
+				    createAnswer(offerJson);
+				}else{
+					var rtc_user = {"msg_type" : "reject","targetUser":offerJson.originUser,"msg_content":"拒絕通話"};
+					webSocket.send(JSON.stringify(rtc_user));
+				}            	
+            	 	
             	break;  
 			case "sendCandidate"://接收candidate。
 				console.log("有peer");         	
@@ -143,6 +160,15 @@ if ("WebSocket" in window) {
 				console.log("sendAnswerIsReady is true");
 				answerSetting_isReady = true;
 				console.log(answerSetting_isReady);
+				break;
+			case "reject":								
+				let msg_reject = obj[msg_type];
+				if(msg_reject.msg_content == "通話中"){
+					alert("對方正在通話中");
+				}else{
+					alert("對方拒絕與你通話");
+				}
+				closeVideoCall();
 				break;
 			default://取得關鍵字搜尋筆數(msg_type=showKeyword)
 				let keywordMap= new Map();
