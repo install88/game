@@ -253,7 +253,7 @@ function setMessageInnerHTML(innerHTML) {
 
 function setImgInnerHTML(innerHTML) {
 	let msg_div = document.createElement("div");
-	let msg_img = document.createElement("img");
+	let msg_img = document.createElement("img");        	
 	msg_img.src = innerHTML;
 	msg_img.width = 200;
 	msg_img.height = 200;

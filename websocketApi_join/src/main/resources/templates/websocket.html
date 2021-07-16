@@ -3,11 +3,14 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>websocket</title>
-    <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script>
+<!--     <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script> -->
+    <script src="js/jquery.min.js" th:src="@{/js/jquery.min.js}"></script>
     <script src="http://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>     
     <style>		
+    	html {touch-action: none;}
+    	
 		.outer-container,.content {
 			font-size:20px;		
 		    width: 600px; height: 250px;
@@ -28,6 +31,26 @@
 		.inner-container::-webkit-scrollbar {
 		    display: none;
 		}		
+		
+	    .box {
+/* 	        width: 3.75rem; */
+	        width: 20rem;
+	        height:200%;
+	        background: #333;
+	        position: absolute;
+	        top:0px;
+	        left:0px;
+	        margin: 0 auto;
+	        align-items: center; /*定義body的元素垂直居中*/
+	        justify-content: center; /*定義body的裡的元素水平居中*/
+	        display: none;
+			overflow: scroll;
+			-webkit-overflow-scrolling:touch;
+	    }
+	    .box img{
+	        width:100%;
+			position: absolute;                
+	    }		
     </style>         
 </head>
 
@@ -57,9 +80,13 @@
 	 <div class="outer-container" id="outer-container">
 	     <div class="inner-container" id="inner-container">
 	        <div class="content" style="text-align: center;" id = "message">
-	        </div>
+	        </div>       
 	     </div>
 	 </div>		
+	 
+    <div class="box">
+        <img src="" />
+    </div>		 
 	<video id="remoteVideo" style="width: 400px;height: 300px;"></video>
 	<input type="text" th:value="${userID}" id="userID" style="display: none"/>
 	
@@ -84,5 +111,6 @@
 <script src="js/main.js" th:src="@{/js/main.js}"></script>
 <script src="js/connection.js"  th:src="@{/js/connection.js}"></script>
 <script src="js/webRTC.js" th:src="@{/js/webRTC.js}"></script>
+<script src="js/adjustImg.js" th:src="@{/js/adjustImg.js}"></script>
 
 </html>
