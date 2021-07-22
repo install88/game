@@ -33,7 +33,7 @@ public interface MsgMapper{
     List<Map<String,Object>> getUnreadCount(String msg_to);
 
     //取得關鍵字搜尋筆數
-    List<Map<String,Object>> searchKeyword(MsgVO msgVO);
+    List<Map<String,Object>> searchKeywordCount(MsgVO msgVO);
     
     //取得個人資訊
     Map<String,Object> getOwnInfo(String userID);

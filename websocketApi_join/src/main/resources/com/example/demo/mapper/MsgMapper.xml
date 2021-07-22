@@ -60,7 +60,7 @@
 		group by msg_from;        
     </select>   
     
-    <select id="searchKeyword" parameterType="MsgVO" resultType="map">
+    <select id="searchKeywordCount" parameterType="MsgVO" resultType="map">
         select msg_from, msg_to, count(*) as msg_count from message where (msg_from = #{msg_from} or msg_to = #{msg_to}) and msg_content like #{msg_content} group by msg_from
     </select>
     

@@ -109,9 +109,9 @@ if ("WebSocket" in window) {
 					}            	            	
             	}else{
             		scroll_to_bottom();
-            	}            	
+            	}
 //            	setMessageInnerHTML(msg_content);
-            	break;    
+            	break;
 			case "sendOffer"://接收offer。
             	var offerJson = obj[msg_type];
             	console.log("接收offer");
@@ -178,8 +178,11 @@ if ("WebSocket" in window) {
             		}else{
             			handleMapLogic(keywordMap, msgVO.msg_from, msgVO.msg_count);             		
             		}
-            	}); 
-				console.log(keywordMap);
+            	});
+				for (let [key, value] of keywordMap) {
+					setMessageInnerHTML(key+ ":" + value);					
+				}            	 
+//				console.log(keywordMap);
         }
     };
 
@@ -233,13 +236,13 @@ function handleMapLogic(map, key, count) {
 }   
 
 //點擊搜尋按鈕，搜尋關鍵字。
-function search() {
+function searchKeywordCount() {
     var searchText = $("#search").val();
     var message = {            
         "msg_from": userID,
         "msg_to": userID,
         "msg_content": searchText,
-        "msg_type" : "searchKeyword"
+        "msg_type" : "searchKeywordCount"
     };        
   	//發送訊息至後端server
     webSocket.send(JSON.stringify(message));
@@ -259,14 +262,14 @@ function setImgInnerHTML(innerHTML) {
 	msg_img.height = 200;
 	msg_div.append(msg_img);
     $("#message").append(msg_div);
-}    
+}
 
 //scroll bar滑動至第一則未讀訊息上。
 function setMessageInnerHTML_adjustBar(innerHTML) {
     document.getElementById('message').innerHTML += "<div id='adjust_bar'>" + innerHTML + '<div/>';
     var target_top = $("#adjust_bar").offset().top;
     document.getElementById('inner-container').scrollTop = target_top;                    
-}   
+}
 
 //送出訊息時，scroll bar滑動至底。
 function scroll_to_bottom(){

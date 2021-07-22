@@ -46,8 +46,8 @@ public class MsgService {
     }     
     
     
-    public List<Map<String,Object>> searchKeyword(MsgVO msgVO) {
-    	return msgMapper.searchKeyword(msgVO);
+    public List<Map<String,Object>> searchKeywordCount(MsgVO msgVO) {
+    	return msgMapper.searchKeywordCount(msgVO);
     }    
     
     public Map<String,Object> getOwnInfo(String userID) {

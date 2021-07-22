@@ -15,7 +15,7 @@ $(function(){
         eleImg.style.display="flex";
         oImg.src=this.src;
 	})	
-})   
+})
 
 
 
@@ -51,7 +51,6 @@ eleImg.addEventListener('touchstart', function (event) {
 eleImg.addEventListener('touchmove', function (event) {    	
 	if(event.touches.length==2){
 		console.log("touchmove觸發2");
-  
         if (!store.moveable) {
         	console.log("直接return");
             return;
@@ -95,7 +94,7 @@ eleImg.addEventListener('touchmove', function (event) {
             }
             // 記住使用的缩放值
             store.scale = newScale;
-            // 图像应用缩放效果                
+            // 圖像缩放效果                
             document.querySelector(".box img").style.transform = 'scale('+ newScale +')';    		
 		}
 	}

@@ -3,7 +3,7 @@ package com.example.demo;
 public interface IContent {
 	public final static String SAVE = "save";
 	public final static String GETMESSAGE = "getMessage";
-	public final static String SEARCHKEYWORD = "searchKeyword";
+	public final static String SEARCHKEYWORDCOUNT = "searchKeywordCount";	
 	public final static String SHOWLASTMSG = "showLastMsg";
 	public final static String SHOWMSGCOUNT = "showMsgCount";
 	public final static String RECEIVE_OTHERS_MSG = "receive_others_msg";

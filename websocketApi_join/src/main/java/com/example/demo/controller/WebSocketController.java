@@ -190,12 +190,12 @@ public class WebSocketController {
                     //令訊息狀態改為已讀
                     msgService.msgUpdateStatus(msg_from, msg_to);
                     break;
-            	case IContent.SEARCHKEYWORD://關鍵字搜尋    
+            	case IContent.SEARCHKEYWORDCOUNT://關鍵字搜尋筆數    
                 	MsgVO msgVO_3 = new MsgVO();            	
                 	msgVO_3.setMsg_from(jsonObject.getString("msg_from"));
                 	msgVO_3.setMsg_to(jsonObject.getString("msg_to"));
                 	msgVO_3.setMsg_content("%" + jsonObject.getString("msg_content") + "%");                        	
-                    List<Map<String, Object>> msg_keyword_list = msgService.searchKeyword(msgVO_3);
+                    List<Map<String, Object>> msg_keyword_list = msgService.searchKeywordCount(msgVO_3);
                     Map<String, Object> msg_keyword_map = new HashMap<>();
                     msg_keyword_map.put(IContent.SHOWKEYWORD, msg_keyword_list);                
                     sendMessageTo(JSON.toJSONString(msg_keyword_map), msgVO_3.getMsg_from());
