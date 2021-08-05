@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.MsgMapper">
+ 	<resultMap id="LastMsgResultMap" type="com.example.demo.VO.MsgVO">
+		<result column="msg_from" property="msg_from" jdbcType="VARCHAR" />
+		<result column="msg_to" property="msg_to" jdbcType="VARCHAR" />
+		<result column="msg_content" property="msg_content" jdbcType="VARCHAR" />
+		<result column="msg_status" property="msg_status" jdbcType="INTEGER" />
+		<result column="msg_time" property="msg_time" jdbcType="TIMESTAMP" />
+		<result column="msg_img" property="msg_img" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<result column="username" property="msg_from_user_name" jdbcType="VARCHAR" />		
+    </resultMap>
+    
+ 	<resultMap id="MsgListResultMap" type="com.example.demo.VO.MsgVO">
+		<result column="msg_from_username" property="msg_from_user_name" jdbcType="VARCHAR" />
+		<result column="msg_to_username" property="msg_to_user_name" jdbcType="VARCHAR" />
+		<result column="msg_content" property="msg_content" jdbcType="VARCHAR" />
+		<result column="msg_status" property="msg_status" jdbcType="INTEGER" />
+		<result column="msg_time" property="msg_time" jdbcType="TIMESTAMP" />
+		<result column="msg_to" property="msg_to" jdbcType="VARCHAR" />		
+		<result column="msg_img" property="msg_img" javaType="java.lang.String" jdbcType="VARCHAR" />		
+    </resultMap>    
+    
+ 	<resultMap id="getOwnInfoMap" type="com.example.demo.VO.MsgVO">
+		<result column="username" property="msg_from_user_name" jdbcType="VARCHAR" />	
+		<result column="msg_headshot" property="msg_headshot" javaType="java.lang.String" jdbcType="VARCHAR" />		
+    </resultMap>        
+    
+	<insert id="msgSave" parameterType="MsgVO" useGeneratedKeys="true" keyProperty="msg_ID" keyColumn="msg_id">
+		insert into message(msg_from, msg_to, msg_content, msg_status)
+		values(#{msg_from, jdbcType=VARCHAR}, #{msg_to, jdbcType=VARCHAR}, #{msg_content, jdbcType=VARCHAR}, #{msg_status, jdbcType=INTEGER})
+	</insert>
+	
+	<insert id="msgImgSave" parameterType="MsgVO" useGeneratedKeys="true" keyProperty="msg_ID" keyColumn="msg_id">
+		insert into message(msg_from, msg_to, msg_img, msg_status)
+		values(#{msg_from, jdbcType=VARCHAR}, #{msg_to, jdbcType=VARCHAR}, #{msg_img, jdbcType=VARCHAR}, #{msg_status, jdbcType=INTEGER})
+	</insert>	
+	 	
+<!--     <select id="getAllFromLastMessage" parameterType="String" resultType="MsgResultMap"> -->
+    <select id="getAllFromLastMessage" parameterType="String" resultMap="LastMsgResultMap">
+		SELECT * FROM CUSTOMER AS cus
+		RIGHT JOIN (SELECT * FROM message msg WHERE msg_time=(select max(msg_time) from message where msg_from=msg.msg_from and msg_to = #{msg_to})) AS m 
+		ON cus.userID = m.msg_from;		    
+    </select>
+    
+    <select id="getConversationRecord" parameterType="String" resultMap="MsgListResultMap">
+		SELECT cus_from.username AS msg_from_username ,
+			   cus_to.username   AS msg_to_username ,
+			   msg.msg_content   AS msg_content,
+			   msg.msg_status    AS msg_status,
+			   msg.msg_time      AS msg_time ,
+			   msg.msg_to        AS msg_to ,
+			   msg.msg_img       AS msg_img
+		FROM (SELECT * FROM customer) AS cus_from RIGHT JOIN (select * from message where (msg_from = #{msg_from} and msg_to = #{msg_to})
+													  		  union all
+													  		  select * from message where (msg_from = #{msg_to} and msg_to = #{msg_from})
+													  		  order by msg_time) as msg ON cus_from.userID = msg.msg_from
+									              LEFT JOIN customer cus_to ON cus_to.userID = msg.msg_to;				        
+    </select>
+    
+    <select id="getUnreadCount" parameterType="String" resultType="map">
+		SELECT *,count(*) AS msg_count FROM CUSTOMER AS CUS
+		RIGHT JOIN (SELECT msg_from from MESSAGE where msg_to = #{msg_to} and msg_status=0) as MSG
+		on CUS.userID = MSG.msg_from
+		group by msg_from;        
+    </select>   
+    
+    <select id="searchKeywordCount" parameterType="MsgVO" resultType="map">
+        select msg_from, msg_to, count(*) as msg_count from message where (msg_from = #{msg_from} or msg_to = #{msg_to}) and msg_content like #{msg_content} group by msg_from
+    </select>
+    
+    <select id="getOwnInfo" parameterType="String" resultMap="getOwnInfoMap">
+        select username,photo AS msg_headshot from customer where userID = #{userID}
+    </select>    
+    
+    
+	<update  id="msgUpdateStatus" parameterType="MsgVO">
+		update message set msg_status=1
+		where msg_from = #{msg_from} and msg_to= #{msg_to} and msg_status=0
+	</update >     
+</mapper>

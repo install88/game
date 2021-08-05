@@ -1,0 +1,224 @@
+/*top*/
+
+
+.top_dp02{
+  background: url('../img/top_dp013.png') 0 0;
+  background-repeat: repeat-x;
+}
+
+
+/*
+#sort01 a {
+	width:60vh;
+	height:60vh;
+	display: block;
+}
+	
+#sort01 {
+	width:60vh;
+	height:60vh;
+	background: url('../img/sort_a_01.png') 0 0;
+	background-repeat: no-repeat;
+	}
+	
+#sort01 a:hover {
+	background-color: #000000e0;
+	background: url('../img/sort_a_01.png') 0 0;
+	background-repeat: no-repeat;
+}
+
+#sort02 a {
+	width:60vh;
+	height:60vh;
+	display: block;
+}
+	
+#sort02 {
+	width:60vh;
+	height:60vh;
+	background: url('../img/sort_a_02.png') 0 0;
+	background-repeat: no-repeat;
+	}
+	
+#sort02 a:hover {
+	background-color: #000000e0;
+	background: url('../img/sort_a_02.png') 0 0;
+	background-repeat: no-repeat;
+}
+
+*/
+
+/*縮圖*/
+
+/*div.gallery {
+  border: 1px solid #ccc;
+}
+
+div.gallery:hover {
+  border: 1px solid #777;
+}*/
+
+/**/
+
+.p_01d{
+	width: 100vh;
+
+}
+
+.meun_dp01{
+  background: url('../img/meun_dp01.png') 0 0;
+  background-repeat: repeat-x;
+}
+
+
+.ht1 {
+  text-align: center;
+  text-transform: uppercase;
+  color: #FFF;
+  font-size: 1.2rem;
+  margin-top: 15px;
+
+}
+/*下選單*/
+
+.dropbtn {
+	width:30px;
+	height:55px;
+	background: url('../img/button003_a_top.png') 0 0;
+  border: 0;\
+  uotline:none;
+}
+
+
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9db;
+  min-width: 100px;
+  z-index: 1;
+  margin-top: -20px;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color: #FFA726}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+
+/*選臺頁*/
+
+.sort_top{
+ width: 100%;
+ height: 35px;
+ background: #000000;
+ border: 2px solid #FFC803;
+ border-radius: 30px 30px 0px 0px;
+ margin-bottom: 0PX;
+}
+
+
+.sort_top_01{
+ width: 100%;
+ height: 35px;
+ background: #000000;
+ border: 2px solid #5f5f5f;
+ border-radius: 30px 30px 0px 0px;
+ margin-bottom: 0PX;
+}
+
+.sort_d_01{
+ width: 100%;
+ height: 35px;
+ background: #000000;
+ border: 2px solid #FFC803;
+ border-radius: 0px 0px 15px 15px;
+ margin-bottom: 0PX;
+}
+
+
+.no_font_01{
+ font-size: 1.2em;
+ color: #FFF;
+ border-top-width: 5px;
+}
+
+
+.no_font_02{
+ font-size: 1.2em;
+ color:#b1b1b1;
+ border-top-width: 5px;
+}
+  /*btn */
+
+/*.col-sm-4,a.btn-1 {
+    font-size: 1rem;
+    padding: 2% 6% 2% 6%;
+}
+
+.col-6,a.btn-1 {
+    font-size: 0.8rem;
+    padding: 1% 5% 1% 5%;
+}
+
+/*浮動*/
+
+.icon-01-d{
+
+  position: absolute;
+  text-shadow: 0 0 10px #080808, 0 0 10px #000000;
+  left:40%;
+  top:40%;
+  z-index: 10;
+  
+}
+
+.icon-02-d{
+
+  position: absolute;
+  text-shadow: 0 0 5px #fbf8f8, 0 0 5px #ffffff;
+  
+}
+
+.btn:not(:disabled):not(.disabled) 
+
+{
+  cursor: pointer;
+}
+
+form.user .form-control-user {
+
+
+  font-size: 1rem;
+  border-radius: 10rem;
+  padding: 1.5rem 1rem;
+}
+
+.form-group {
+    margin-bottom: 1 rem;
+}
+
+.btn:not(:disabled):not(.disabled) {
+    cursor: pointer;
+}
+
+img.imgp-d {
+    opacity: 0.8;
+}
+
+img.imgp-d2 {
+    opacity: 0.5;
+}

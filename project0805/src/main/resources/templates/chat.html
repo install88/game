@@ -1,0 +1,244 @@
+<html>
+<head>
+    <title>視頻聊天</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<!--     <script src="js/peer.js"></script> -->
+    <script src="js/jquery.min.js"></script>
+</head>
+
+<style type="text/css">
+	html {touch-action: none;}
+
+    *{
+        padding:0px;
+        margin:0px;
+    }
+    html{
+        height:100%;
+    }
+    body{
+        height:100%;
+    }
+    .main{
+        width: 3.75rem;
+        position: relative;
+        height:100%; 
+        margin: 0 auto; 
+        background: #eee
+    }
+    .main h1{
+        font-size:0.16rem;
+    }
+    .main img{
+        max-width: 50%
+    }
+    .box {
+        width: 3.75rem;
+        height:200%;
+        background: #333;
+        position: absolute;
+        top:0px;
+        left:0px;
+        margin: 0 auto;
+        align-items: center; /*定義body的元素垂直居中*/
+        justify-content: center; /*定義body的裡的元素水平居中*/
+        display: none;
+		overflow: scroll;
+		-webkit-overflow-scrolling:touch;
+    }
+    .box img{
+        width:100%;
+		position: absolute;                
+    }
+</style>
+<script type="text/javascript">
+    (function (doc, win) {//這段程式碼是做手機端rem適應的
+        var docEl = doc.documentElement,
+            resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+            recalc = function () {
+                var clientWidth = docEl.clientWidth;
+                if (clientWidth>640){
+                   clientWidth=640 
+                }
+                if (!clientWidth) return;
+                else{
+                    docEl.style.fontSize = clientWidth / 3.75 + 'px';
+                }
+            };
+        if (!doc.addEventListener) return;
+        win.addEventListener(resizeEvt, recalc, false);
+        doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+</script>
+<body>
+	<button id="testButton1" style="font-size: 30px;">test1</button>
+	<button id="testButton2" style="font-size: 30px;">test2</button>
+       <div class="main">
+            <h1>點選這個圖片進行預覽</h1>
+            <div class="main2">
+            	<img src="https://sssfreelancehacker.com/wp-content/uploads/2020/07/%E7%B7%9A%E4%B8%8A%E5%9C%96%E7%89%87%E8%A3%BD%E4%BD%9C%E5%B7%A5%E5%85%B7.png"/>
+            </div>
+            			                                   
+            <div class="box">
+                <img src="" />
+            </div>
+        </div>
+
+
+<!--         <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" type="text/javascript" charset="utf-8"></script> -->
+<!-- 	<p id="result"></p> -->
+</body>
+<script type="text/javascript">
+// 	let flag = false; // 是否滚动
+// 	let dur = 0; // 触摸时间，太短不触发
+// 	let date_start, date_end;
+	
+//     var pimg=document.querySelector("img");
+    var oImg = document.querySelector(".box img");
+    var oBox = document.querySelector(".box");
+//     pimg.onclick=function(){
+//         oBox.style.display="flex"
+//         oImg.src=pimg.src
+//     }
+    oBox.onclick=function(){
+        oBox.style.display="none"
+        oImg.src=''
+    }
+    
+    $(function(){
+    	$(".main2").delegate("img","click",function(){
+            oBox.style.display="flex";
+//             oImg.src=pimg.src;
+            oImg.src=this.src;
+    	})	
+//     	$("<p>这是生成的内容</p>").appendTo("body");
+    })    
+    
+    var eleImg = document.querySelector('.box');
+    var store = {
+        scale: 1
+    };
+    // 縮放處理
+    eleImg.addEventListener('touchstart', function (event) {
+    	console.log("touchstart進入");
+    	
+    	if(event.touches.length<2){
+			event.stopImmediatePropagation(); // 阻止冒泡
+			return;	  		
+    	}
+        var touches = event.touches;
+        var events = touches[0];
+        var events2 = touches[1];
+        if (!events) {
+            return;
+        }
+
+//         event.preventDefault();
+
+        // 第一個觸摸點的座標
+        store.pageX = events.pageX;
+        store.pageY = events.pageY;
+
+        store.moveable = true;
+
+        if (events2) {
+            store.pageX2 = events2.pageX;
+            store.pageY2 = events2.pageY;
+        }     
+        store.originScale = store.scale || 1;
+    });
+    
+    eleImg.addEventListener('touchmove', function (event) {    	
+    	if(event.touches.length==2){
+    		console.log("touchmove觸發2");
+//     		event.preventDefault();	  
+            if (!store.moveable) {
+            	console.log("直接return");
+                return;
+            }
+    
+            var touches = event.touches;
+            var events = touches[0];
+            var events2 = touches[1];
+
+//             result.textContent = '触摸点数量：' + touches.length;
+
+            if (events2) {
+            	// 雙指移動
+                if (!store.pageX2) {
+                    store.pageX2 = events2.pageX;
+                }
+                if (!store.pageY2) {
+                    store.pageY2 = events2.pageY;
+                }
+
+                //獲取座標之間的舉例
+                var getDistance = function (start, stop) {
+                    return Math.hypot(stop.x - start.x, stop.y - start.y);
+                };
+
+                var zoom = getDistance({
+                    x: events.pageX,
+                    y: events.pageY
+                }, {
+                    x: events2.pageX,
+                    y: events2.pageY
+                }) /
+                getDistance({
+                    x: store.pageX,
+                    y: store.pageY
+                }, {
+                    x: store.pageX2,
+                    y: store.pageY2
+                });
+
+                var newScale = store.originScale * zoom;
+                // 最大缩放比例限制
+                if (newScale > 3) {
+                    newScale = 3;
+                }
+                // 記住使用的缩放值
+                store.scale = newScale;
+                // 图像应用缩放效果
+//                 eleImg.style.transform = 'scale('+ newScale +')';
+//                 oImg.style.transform = 'scale('+ newScale +')';                
+                document.querySelector(".box img").style.transform = 'scale('+ newScale +')';
+//                 result.textContent = 'zoom: '+ zoom + ', apply scale: ' + newScale;
+    		
+    		}
+		}
+    });
+
+    eleImg.addEventListener('touchend', function () {
+        store.moveable = false;
+        delete store.pageX2;
+        delete store.pageY2;
+    });
+    
+    eleImg.addEventListener('touchcancel', function () {
+        store.moveable = false;
+        delete store.pageX2;
+        delete store.pageY2;
+    });    
+    
+
+    
+    $("#testButton1").click(function() {
+        var myImg = $('<img />', {
+     	   id: 'id1',
+     	   src: "https://lh3.googleusercontent.com/proxy/mOg0YELlT8wjbwtmQVBR4eOhNR_XnCRAQGteBusXQEh5UMvEwVTa8He_yWrG8v9oBE1vnJ7ftd1eWGJ32_7EHmiJv-S5Wl7THvSpX_mwybr6k8Qw-usWwXQQrDvsH_TyMY3CrkSDc2QI5zfPkLuUDlp-oQj0ink_vmjnJOC4Qp5as2OlcQ"
+     	});
+     	$(".main2").append(myImg);
+    });
+    
+    $("#testButton2").click(function() {
+        var myImg = $('<img />', {
+     	   id: 'id1',
+     	   src: "https://img.lovepik.com/element/40167/3698.png_300.png"
+     	});
+     	$(".main2").append(myImg);
+    });    
+
+
+</script>
+</html>
