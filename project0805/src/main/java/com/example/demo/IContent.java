@@ -3,9 +3,11 @@ package com.example.demo;
 public interface IContent {
 	public final static String SAVE = "save";
 	public final static String GETMESSAGE = "getMessage";
+	public final static String ADDFRIEND = "addFriend";
 	public final static String GETOWNINFO = "getOwnInfo";
 	public final static String SEARCHKEYWORDCOUNT = "searchKeywordCount";	
 	public final static String SHOWLASTMSG = "showLastMsg";
+	public final static String ONOPENINFO = "onOpenInfo";
 	public final static String SHOWMSGCOUNT = "showMsgCount";
 	public final static String RECEIVE_OTHERS_MSG = "receive_others_msg";
 	public final static String RECEIVE_OWN_MSG = "receive_own_msg";

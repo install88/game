@@ -24,8 +24,7 @@ function build_chatting(){
 		//發送端處理offer
 		peer.createOffer().then(offer => {
 			console.log("createOffer~~~~~~~~~~~");
-			var targetUser = $("#onLineUser").val();
-			var rtc_user = {"msg_type" : "sendOffer","targetUser": targetUser,"originUser":userID, "offerSDP" : offer};			
+			var rtc_user = {"msg_type" : "sendOffer","targetUser": othersideID,"originUser":userID, "offerSDP" : offer};			
 		    peer.setLocalDescription(offer);
 		    webSocket.send(JSON.stringify(rtc_user));
 		});
@@ -35,8 +34,7 @@ function build_chatting(){
 			console.log(answerSetting_isReady);
 			var candidate = event.candidate;
 			if(candidate){
-				var targetUser = $("#onLineUser").val();
-				var rtc_user = {"msg_type" : "storeCandidate","targetUser": targetUser,"originUser":userID, "candidate" : event.candidate, "answerSetting_isReady":answerSetting_isReady};
+				var rtc_user = {"msg_type" : "storeCandidate","targetUser": othersideID,"originUser":userID, "candidate" : event.candidate, "answerSetting_isReady":answerSetting_isReady};
 				webSocket.send(JSON.stringify(rtc_user));	
 			}
 		};	
@@ -109,7 +107,9 @@ function closeVideoCall() {
 		peer.close();
 		peer = null;
 	}			
-	document.getElementById("hangup-button").disabled = true;
+//	document.getElementById("hangup-button").disabled = true;
+	let modal = document.getElementById("myModal");
+	modal.style.display = "none";
 }	
 
 //監聽RTC連線狀態

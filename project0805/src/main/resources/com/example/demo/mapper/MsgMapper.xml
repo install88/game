@@ -8,7 +8,8 @@
 		<result column="msg_status" property="msg_status" jdbcType="INTEGER" />
 		<result column="msg_time" property="msg_time" jdbcType="TIMESTAMP" />
 		<result column="msg_img" property="msg_img" javaType="java.lang.String" jdbcType="VARCHAR" />
-		<result column="username" property="msg_from_user_name" jdbcType="VARCHAR" />		
+		<result column="username" property="msg_from_user_name" jdbcType="VARCHAR" />
+		<result column="photo" property="msg_headshot" jdbcType="VARCHAR" />				
     </resultMap>
     
  	<resultMap id="MsgListResultMap" type="com.example.demo.VO.MsgVO">
@@ -66,7 +67,9 @@
     </select>   
     
     <select id="searchKeywordCount" parameterType="MsgVO" resultType="map">
-        select msg_from, msg_to, count(*) as msg_count from message where (msg_from = #{msg_from} or msg_to = #{msg_to}) and msg_content like #{msg_content} group by msg_from
+        select msg_from, msg_to, count(*) as msg_count 
+        from message
+        where (msg_from = #{msg_from} or msg_to = #{msg_from}) and msg_content like #{msg_content} group by msg_from
     </select>
     
     <select id="getOwnInfo" parameterType="String" resultMap="getOwnInfoMap">
@@ -77,5 +80,23 @@
 	<update  id="msgUpdateStatus" parameterType="MsgVO">
 		update message set msg_status=1
 		where msg_from = #{msg_from} and msg_to= #{msg_to} and msg_status=0
-	</update >     
+	</update >
+	
+	<insert id="addFriend" parameterType="String" useGeneratedKeys="true">
+		insert into friend(user1_id, user2_id)
+		values(#{msg_from, jdbcType=VARCHAR}, #{msg_to, jdbcType=VARCHAR})
+	</insert>
+	
+	
+    <select id="getFriendList" parameterType="String" resultType="MsgVO">
+		SELECT c.username AS msg_from_user_name,
+			   f.user2_id AS msg_from,
+			   c.photo AS msg_headshot
+		from friend as f right join customer as c on f.user2_id = c.userID
+		where f.user1_id = #{userID}; 			   				       
+    </select>	   
+    
+    <select id="getMemeberPhoto" parameterType="String" resultType="MsgVO">
+		SELECT photo as msg_headshot from customer where userID = #{msg_from};       
+    </select>	    
 </mapper>

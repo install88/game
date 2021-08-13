@@ -75,26 +75,35 @@ public class WebSocketController {
             msgService = applicationContext.getBean(MsgService.class);
 //            Map<String,Object> ownInfoMap = msgService.getOwnInfo(userID);
             MsgVO ownInfo_msgVO = msgService.getOwnInfo(userID);
-            System.out.print(ownInfo_msgVO);
             this.username = ownInfo_msgVO.getMsg_from_user_name();
             this.headshot = ownInfo_msgVO.getMsg_headshot();
             
             //傳給自己
         	Map<String, Object> ownInfo_map = new HashMap<>();
         	ownInfo_map.put(IContent.GETOWNINFO, ownInfo_msgVO);
-        	sendMessageTo(JSON.toJSONString(ownInfo_map), userID);
+//        	sendMessageTo(JSON.toJSONString(ownInfo_map), userID);
             
             //查詢未讀訊息count
-//            List<Map<String, Object>> msg_count_list = msgService.getUnreadCount(userID);
-//            Map<String, Object> msg_count_map = new HashMap<>();
-//            msg_count_map.put(IContent.SHOWMSGCOUNT, msg_count_list);
+            List<Map<String, Object>> msg_count_list = msgService.getUnreadCount(userID);
+            Map<String, Object> msg_count_map = new HashMap<>();
+            msg_count_map.put(IContent.SHOWMSGCOUNT, msg_count_list);
 //            sendMessageTo(JSON.toJSONString(msg_count_map), userID);              
             
             //查詢給自己的訊息            
 //            List<MsgVO> lastMsg_list = msgService.getAllFromLastMessage(userID);
-//            Map<String, Object> lastMsg_map = new HashMap<>();
-//            lastMsg_map.put(IContent.SHOWLASTMSG, lastMsg_list);
+            List<MsgVO> lastMsg_list = msgService.getFriendList(userID);                        
+            Map<String, Object> lastMsg_map = new HashMap<>();
+            lastMsg_map.put(IContent.SHOWLASTMSG, lastMsg_list);
 //            sendMessageTo(JSON.toJSONString(lastMsg_map), userID);
+            
+            //onOpenInfo
+            Map<String, Object> onOpenInfo_map = new HashMap<>();
+            List<Map<String, Object>> onOpenInfo_list = new ArrayList();
+            onOpenInfo_list.add(ownInfo_map);
+            onOpenInfo_list.add(msg_count_map);
+            onOpenInfo_list.add(lastMsg_map);
+            onOpenInfo_map.put(IContent.ONOPENINFO, onOpenInfo_list);
+            sendMessageTo(JSON.toJSONString(onOpenInfo_map), userID);
                             
         } catch (Exception e) {
         	//上線的時候發生了錯誤
@@ -189,6 +198,11 @@ public class WebSocketController {
                     //令訊息狀態改為已讀
                     msgService.msgUpdateStatus(msg_from, msg_to);
                     break;
+            	case IContent.ADDFRIEND:
+            		String otherID = jsonObject.getString("msg_from");
+            		String ownID = jsonObject.getString("msg_to");
+            		msgService.addFriend(ownID, otherID);            		
+            		break;
             	case IContent.SEARCHKEYWORDCOUNT://關鍵字搜尋筆數    
                 	MsgVO msgVO_3 = new MsgVO();            	
                 	msgVO_3.setMsg_from(jsonObject.getString("msg_from"));

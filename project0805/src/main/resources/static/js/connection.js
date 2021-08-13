@@ -1,6 +1,7 @@
 if ("WebSocket" in window) {
 	//ws://localhost:8080/websocket/{userID}
-    webSocket = new WebSocket("ws://192.168.50.19:8080/websocket/" + userID);        
+//    webSocket = new WebSocket("ws://192.168.50.20:8080/websocket/" + userID);
+    webSocket = new WebSocket("ws://localhost:8080/websocket/" + userID);        
     //連通之後觸發
     webSocket.onopen = function () {
 		console.log("已經連通了websocket");
@@ -9,98 +10,133 @@ if ("WebSocket" in window) {
 	//接收後端sever發送的消息
     webSocket.onmessage = function(evt) {
 		console.log(evt);   		    			
-        var received_msg = evt.data;
+        let received_msg = evt.data;
         console.log("數據已接收:" + received_msg);
-        var obj = JSON.parse(received_msg);                	    
-        var msg_type = Object.keys(obj)[0];
+        let obj = JSON.parse(received_msg);                	    
+        let msg_type = Object.keys(obj)[0];
         console.log("msg_type=" + msg_type);
         switch(msg_type){
-			case "getOwnInfo":
-				var msgVO = obj[msg_type];
-				userName =  msgVO.msg_from_user_name;
-				console.log("userName="+userName);
-				userHeadshot =  msgVO.msg_headshot;								
-				break;        
-            case "showLastMsg"://顯示朋友的最後一筆訊息
-                obj[msg_type].forEach(function(msgVO){
-    				console.log("發送人:" + msgVO.msg_from);
-    				console.log("接收人:" + msgVO.msg_to);
-    				console.log("訊息: "  + msgVO.msg_content);
-    				console.log("狀態: "  + msgVO.msg_status);
-    				console.log("時間: "  + new Date(msgVO.msg_time));
-    				console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-					if(msgVO.msg_content){
-						setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);	
-					}else{
-						setImgInnerHTML(msgVO.msg_img);
-					}	    				
-                });   
-            	break;
-			case "showMsgCount": //顯示朋友的未讀訊息筆數
-                obj[msg_type].forEach(function(msgVO){
-    				console.log("發送人:" + msgVO.msg_from);
-    				console.log("筆數: "  + msgVO.msg_count);
-    				console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    				userMap.set(msgVO.msg_from,msgVO.msg_count);	    				
-    				setMessageInnerHTML(msgVO.username + ":" + userMap.get(msgVO.msg_from) + "筆未讀");
-                });  
-            	break;                	
+        	case "onOpenInfo":
+        		console.log("onOpenInfo");
+				obj[msg_type].forEach(function(data){
+					let data_type = Object.keys(data)[0];
+					switch(data_type){
+						case "getOwnInfo":
+							console.log("getOwnInfo");
+							var msgVO = data[data_type];
+							userName =  msgVO.msg_from_user_name;
+							userHeadshot =  msgVO.msg_headshot;								
+							break;        
+			            case "showLastMsg"://顯示朋友的最後一筆訊息
+			            	console.log("showLastMsg");
+			                data[data_type].forEach(function(msgVO){			                
+								showLastMessage(msgVO);	
+			                });   
+			            	break;			            	
+						case "showMsgCount": //顯示朋友的未讀訊息筆數
+							console.log("showMsgCount");
+			                data[data_type].forEach(function(msgVO){
+			    				userMap.set(msgVO.msg_from,msgVO.msg_count);	    				
+			                });  
+			            	break;   			            								
+					}	
+                });         		
+        		break;             	
 			case "showRecord"://顯示與該朋友的對話
+				let chattingUserImg = document.getElementById('chattingUserImg');	
 				let haveRead = false; 
                 obj[msg_type].forEach(function(msgVO){
-                	if(haveRead == false && msgVO.msg_status == 0 && msgVO.msg_to == userID){
-                		haveRead = true;
-                		setMessageInnerHTML("下列未讀");
+                	console.log(msgVO);
+                	msgVO.msg_headshot = chattingUserImg.src;
+                	if(msgVO.msg_to == userID){
+                		console.log("~~~~~~~~~~~進來了");
 						if(msgVO.msg_content){
-							setMessageInnerHTML_adjustBar(msgVO.msg_from_user_name + ":" + msgVO.msg_content);
+							setOtherMessageInnerHTML(msgVO, 2, false);							
 						}else{
-							setImgInnerHTML(msgVO.msg_img);
+							setOtherImgInnerHTML(msgVO, 2, false);							
 						}		                			                		
                 	}else{
 						if(msgVO.msg_content){
-							setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);
+							setOwnMessageInnerHTML(msgVO, 2, false);
 						}else{
-							setImgInnerHTML(msgVO.msg_img);
+							setOwnImgInnerHTML(msgVO, 2, false);
 						}	                			                			
                 	}
                 });
-                //若訊息都是已讀狀態，將scrollbar拉至最底下。
-                if(haveRead == false){
-                	document.getElementById('inner-container').scrollTop = document.getElementById('inner-container').scrollHeight;
-                }
+                
+                //顯示完資料後，將關鍵字查詢設為null
+                if(searchKeyword){
+                	let target_top = $(".adjust_bar:last").offset().top;
+                	let div = document.getElementsByClassName("ex1-2")[2];
+					div.scrollTop = target_top -150;   
+                	searchKeyword = null;
+                }else{
+	                //將scrollbar拉至最底下。
+					scroll_to_bottom(2);                
+                }                
             	break;                	                	
 			case "receive_others_msg"://在線時，接收訊息。
 				console.log("receive_others_msg有進來");
-            	var msgVO = obj[msg_type];
-				if(msgVO.msg_content){
-					console.log("msg_content有進來");	
-					setMessageInnerHTML(msgVO.msg_from_user_name + ":" + msgVO.msg_content);	
-				}else{
-					console.log("msg_img有進來");
-					setImgInnerHTML(msgVO.msg_img);
-				}
-            	
-            	//若聊天視窗無開啟的情況，未讀訊息要增加。
-            	if($("#onLineUser").val()!= msgVO.msg_from){
-            		handleMapLogic(userMap, msgVO.msg_from, 1);
-            		setMessageInnerHTML(msgVO.msg_from_user_name + "的未讀訊息有" + userMap.get(msgVO.msg_from));	
-            	}else{            	
-            		setMessageInnerHTML(msgVO.msg_from_user_name + "的未讀訊息有" + 0);            		
+            	var msgVO = obj[msg_type];            					            	            
+				if(msgVO.msg_from == othersideID && chatRoomIsOpen){
+					msgVO.msg_headshot = document.getElementById('chattingUserImg').src;					
+					if(msgVO.msg_content){
+						setOtherMessageInnerHTML(msgVO, 2, true);
+					}else{
+						setOtherImgInnerHTML(msgVO, 2, true);
+					}	
             		//已經開啟跟該用戶聊天的視窗，故要把訊息儲存成已讀。
                     var message = {            
                             "msg_from": msgVO.msg_from,
-                            "msg_to": msgVO.msg_to,
+                            "msg_to": userID,
                             "msg_type" : "updateMsgStatus"
                     };        
 					//發送訊息至後端server
-					webSocket.send(JSON.stringify(message));            		            		
-            	}    
+					webSocket.send(JSON.stringify(message));     								
+				}else{
+			        if(friendMap.has(msgVO.msg_from)){
+			        	let unread_a = document.querySelectorAll("a[name="+ msgVO.msg_from + "]")[0];
+			        	userMap.set(msgVO.msg_from, userMap.get(msgVO.msg_from) + 1);
+						unread_a.innerText = userMap.get(msgVO.msg_from);
+			        	if(unread_a.style.visibility == 'hidden'){
+							unread_a.style.visibility = "visible";
+			        	}			        				        	     		
+			        }else{//陌生人找你講話時，將陌生人顯示在清單中
+					    $.ajax({
+					        url:'http://localhost:8080/member/getMemberPhoto/',
+					        method:'post',
+					        data: {"msg_from" : msgVO.msg_from},
+					        dataType:'JSON',
+					        success:function(result){
+					        	msgVO.msg_headshot = result.msg_headshot;
+					        	showLastMessage(msgVO);
+					        	let unread_a = document.querySelectorAll('a[name='+ msgVO.msg_from + ']')[0];
+					        	userMap.set(msgVO.msg_from, userMap.get(msgVO.msg_from) + 1);
+					        	unread_a.innerText = userMap.get(msgVO.msg_from);
+					        	if(unread_a.style.visibility == 'hidden'){
+									unread_a.style.visibility = "visible";
+					        	}	
+					        	
+						        let message = {
+									"msg_from": msgVO.msg_from,
+									"msg_to": userID,
+									"msg_type" : "addFriend"
+						        };						        
+						        webSocket.send(JSON.stringify(message));   					        					        	
+					        },
+					        error:function (data) {
+					    		console.log("ajax失敗");    	
+					        }
+					    });		        			        	
+			        } 					
+				}
             	break; 
 			case "receive_own_msg"://接收自己訊息。
             	var serverReceive = obj[msg_type];
             	if(serverReceive){
-            		setMessageInnerHTML("O");
-            		scroll_to_bottom();
+            		console.log("傳送成功");
+//            		setMessageInnerHTML("O");
+//            		scroll_to_bottom();
             	}			 
             	break;                 	                	                	                	
 			case "broadcast"://接收廣播訊息。
@@ -108,13 +144,13 @@ if ("WebSocket" in window) {
             	if(msgVO.msg_from != userID){
 					if(msgVO.msg_content){
 						console.log("msg_content有進來");	
-						setOtherMessageInnerHTML(msgVO);	
+						setOtherMessageInnerHTML(msgVO, 0, true);	
 					}else{
 						console.log("msg_img有進來");
-						setOtherImgInnerHTML(msgVO);
+						setOtherImgInnerHTML(msgVO, 0, true);
 					}            	            	
             	}else{
-            		scroll_to_bottom();
+            		scroll_to_bottom(0);
             	}
 //            	setMessageInnerHTML(msg_content);
             	break;
@@ -206,8 +242,12 @@ function closeWebSocket() {
     webSocket.close();
 }
 
-//點擊發送按鈕送出訊息
+//點擊發送按鈕送出訊息(one to All)
 function sendAll() {
+	if(document.getElementById('toAll').value == ""){
+		return;
+	}
+
     var message = {            
 		"msg_from": userID,
 		"msg_to": "All",
@@ -217,8 +257,8 @@ function sendAll() {
     };                
     
     //放到自己的對話框裡面
-	setOwnMessageInnerHTML(message.msg_content);
-	scroll_to_bottom();    
+	setOwnMessageInnerHTML(message, 0, true);
+	scroll_to_bottom(0);    
 	    
   	//發送訊息至後端server
     webSocket.send(JSON.stringify(message));
@@ -226,6 +266,33 @@ function sendAll() {
     //發送訊息欄清空
     $("#toAll").val("");
 }
+
+//點擊發送按鈕送出訊息(one to one)
+function sendOne() {
+	if(document.getElementById('toOne').value == ""){
+		return;
+	}
+	
+    var message = {            
+		"msg_from": userID,
+		"msg_to": othersideID,
+		"msg_content": document.getElementById('toOne').value,
+		"msg_status" : 0,
+		"msg_type" : "save"
+    };                
+    
+    //放到自己的對話框裡面
+	setOwnMessageInnerHTML(message, 2, true);
+	scroll_to_bottom(2);    
+	    
+  	//發送訊息至後端server
+    webSocket.send(JSON.stringify(message));
+    
+    //發送訊息欄清空
+    $("#toOne").val("");
+}
+
+
 
 //處理map
 function handleMapLogic(map, key, count) {
@@ -251,10 +318,9 @@ function searchKeywordCount() {
 } 
 
 
-function setOwnMessageInnerHTML(innerHTML) {
+function setOwnMessageInnerHTML(msgVO, index, is_realtime) {
 //    document.getElementById('message').innerHTML += '<div>' + innerHTML + '<div/>';
-    let parent = document.getElementsByClassName("card-body");
-    console.log(parent[0]);
+    let parent = document.getElementsByClassName("card-body")[index];
     
     //整條row
     let div = document.createElement("div");
@@ -263,10 +329,19 @@ function setOwnMessageInnerHTML(innerHTML) {
     div.classList.add("mb-4");
     div.classList.add("msg_t01");
     
+    //若是查詢關鍵字，則讓有關鍵字的訊息新增adjust_bar
+    if(searchKeyword){
+    	if(msgVO.msg_content.indexOf(searchKeyword) != -1){
+    		console.log("有匹配到==========" + searchKeyword);
+    		div.classList.add("adjust_bar");
+//    		div.setAttribute("name", "adjust_bar");
+    	}    	
+    }
+    
     //對話框以及內容
     let message_box = document.createElement("div");
     message_box.classList.add("msg_cotainer_send");
-    message_box.innerHTML = innerHTML;
+    message_box.innerHTML = msgVO.msg_content;
 
 	//名子
 	let message_name = document.createElement("span");
@@ -276,11 +351,15 @@ function setOwnMessageInnerHTML(innerHTML) {
     //時間
     let message_time = document.createElement("span");
     message_time.classList.add("msg_time_send");
-	let NowDate=new Date();
-	let h=NowDate.getHours();
-//	let m=NowDate.getMinutes();
-	let m = (NowDate.getMinutes()<10 ? '0' : '') + NowDate.getMinutes();　
-	message_time.innerHTML = h + ":" + m    
+	let date;
+	if(is_realtime){
+		date = new Date();    	
+	}else{
+		date = new Date(msgVO.msg_time);			
+	}
+	let h = date.getHours();
+	let m = (date.getMinutes()<10 ? '0' : '') + date.getMinutes();　
+	message_time.innerHTML = h + ":" + m		  
    
     //個人大頭照圖片
     let img = document.createElement("img");
@@ -298,11 +377,11 @@ function setOwnMessageInnerHTML(innerHTML) {
     message_box.appendChild(message_time);
     div.appendChild(message_box);
     div.appendChild(div_img);
-    parent[0].appendChild(div);                
+    parent.appendChild(div);                
 }
 
-function setOtherMessageInnerHTML(msgVO) {
-    let parent = document.getElementsByClassName("card-body");
+function setOtherMessageInnerHTML(msgVO, index, is_realtime) {
+    let parent = document.getElementsByClassName("card-body")[index];
     
     //整條row
     let div = document.createElement("div");
@@ -311,6 +390,16 @@ function setOtherMessageInnerHTML(msgVO) {
     div.classList.add("mb-4");
     div.classList.add("msg_t01");
     
+    
+    //若是查詢關鍵字，則讓有關鍵字的訊息新增adjust_bar
+    if(searchKeyword){
+    	if(msgVO.msg_content.indexOf(searchKeyword) != -1){
+    		console.log("有匹配到==========" + searchKeyword);
+    		div.classList.add("adjust_bar");
+//    		div.setAttribute("name", "adjust_bar"); 		
+    	}    	
+    }
+           
     //個人大頭照圖片
     let img = document.createElement("img");
     img.classList.add("rounded-circle");
@@ -320,7 +409,34 @@ function setOtherMessageInnerHTML(msgVO) {
     //包圖片的div
     let div_img = document.createElement("div");
     div_img.classList.add("img_cont_msg");    
-    div_img.appendChild(img);    
+    div_img.appendChild(img);
+    
+    //新增onclick事件(跳轉到1-1聊天室)
+    if(index==0){
+		div_img.addEventListener('click', function(){
+			console.log("觸發點事件~~~~~~~~~~~~~");
+			openPageOneToOne("c_talk_1-1", msgVO.msg_from, msgVO.msg_headshot, msgVO.msg_from_user_name)
+			othersideID = msgVO.msg_from;
+	        let message = {
+				"msg_from": msgVO.msg_from,
+				"msg_to": userID,
+	        };
+	        
+			if(friendMap.has(msgVO.msg_from)){
+				message.msg_type = "getMessage";
+		        //將未讀訊息數量改成0
+//		        if(userMap.has(msgVO.msg_from)){
+//		        	userMap.set(msg_from,0);	
+//		        } 						
+			}else{
+				message.msg_type = "addFriend";
+				showLastMessage(msgVO);
+				
+			}
+	        webSocket.send(JSON.stringify(message));            	  
+		});      
+    }
+        
     
     //對話框以及內容
     let message_box = document.createElement("div");
@@ -335,24 +451,26 @@ function setOtherMessageInnerHTML(msgVO) {
     //時間
     let message_time = document.createElement("span");
     message_time.classList.add("msg_time_send");
-	let NowDate=new Date();
-	let h=NowDate.getHours();
-//	let m=NowDate.getMinutes();
-	let m = (NowDate.getMinutes()<10 ? '0' : '') + NowDate.getMinutes();　
-	message_time.innerHTML = h + ":" + m    
+	let date;
+	if(is_realtime){
+		date = new Date();    	
+	}else{
+		date = new Date(msgVO.msg_time);			
+	}
+	let h = date.getHours();
+	let m = (date.getMinutes()<10 ? '0' : '') + date.getMinutes();　
+	message_time.innerHTML = h + ":" + m	  
           
     //放入html中
     message_box.appendChild(message_name);
     message_box.appendChild(message_time);
     div.appendChild(div_img);
     div.appendChild(message_box);    
-    parent[0].appendChild(div);                
+    parent.appendChild(div);                
 }
 
-function setOwnImgInnerHTML(innerHTML) {
-//    document.getElementById('message').innerHTML += '<div>' + innerHTML + '<div/>';
-    let parent = document.getElementsByClassName("card-body");
-    console.log(parent[0]);
+function setOwnImgInnerHTML(msgVO, index, is_realtime) {
+    let parent = document.getElementsByClassName("card-body")[index];
     
     //整條row
     let div = document.createElement("div");
@@ -362,11 +480,12 @@ function setOwnImgInnerHTML(innerHTML) {
     div.classList.add("msg_t01");
     
     //對話框以及內容
-    let message_box = document.createElement("img");
+    let message_box = document.createElement("div");
     message_box.classList.add("msg_cotainer_send");
-    message_box.src = innerHTML;
-	message_box.width = 200;
-	message_box.height = 200;    
+    let message_img = document.createElement("img");
+    message_img.src = msgVO.msg_img;
+	message_img.width = 200;
+	message_img.height = 200;    
 
 	//名子
 	let message_name = document.createElement("span");
@@ -376,11 +495,15 @@ function setOwnImgInnerHTML(innerHTML) {
     //時間
     let message_time = document.createElement("span");
     message_time.classList.add("msg_time_send");
-	let NowDate=new Date();
-	let h=NowDate.getHours();
-//	let m=NowDate.getMinutes();
-	let m = (NowDate.getMinutes()<10 ? '0' : '') + NowDate.getMinutes();　
-	message_time.innerHTML = h + ":" + m    
+	let date;
+	if(is_realtime){
+		date = new Date();    	
+	}else{
+		date = new Date(msgVO.msg_time);			
+	}
+	let h = date.getHours();
+	let m = (date.getMinutes()<10 ? '0' : '') + date.getMinutes();　
+	message_time.innerHTML = h + ":" + m		    
    
     //個人大頭照圖片
     let img = document.createElement("img");
@@ -394,16 +517,17 @@ function setOwnImgInnerHTML(innerHTML) {
     div_img.appendChild(img);
        
     //放入html中
+    message_box.appendChild(message_img);
     message_box.appendChild(message_name);
     message_box.appendChild(message_time);
     div.appendChild(message_box);
     div.appendChild(div_img);
-    parent[0].appendChild(div);                
+    parent.appendChild(div);                
 }
 
 
-function setOtherImgInnerHTML(msgVO) {
-    let parent = document.getElementsByClassName("card-body");
+function setOtherImgInnerHTML(msgVO, index, is_realtime) {
+    let parent = document.getElementsByClassName("card-body")[index];
     
     //整條row
     let div = document.createElement("div");
@@ -421,14 +545,39 @@ function setOtherImgInnerHTML(msgVO) {
     //包圖片的div
     let div_img = document.createElement("div");
     div_img.classList.add("img_cont_msg");    
-    div_img.appendChild(img);    
+    div_img.appendChild(img);
+    
+    //新增onclick事件(跳轉到1-1聊天室)
+    if(index==0){
+		div_img.addEventListener('click', function(){
+			console.log("觸發點事件~~~~~~~~~~~~~");
+			openPageOneToOne("c_talk_1-1", msgVO.msg_from, msgVO.msg_headshot, msgVO.msg_from_user_name)
+			othersideID = msgVO.msg_from;
+	        let message = {
+				"msg_from": msgVO.msg_from,
+				"msg_to": userID,
+	        };
+	        
+			if(friendMap.has(msgVO.msg_from)){
+				message.msg_type = "getMessage";
+		        //將未讀訊息數量改成0
+//		        if(userMap.has(msgVO.msg_from)){
+//		        	userMap.set(msg_from,0);	
+//		        } 						
+			}else{
+				message.msg_type = "addFriend";
+			}
+	        webSocket.send(JSON.stringify(message));            	  
+		});      
+    }        
     
     //對話框以及內容
-    let message_box = document.createElement("img");
+    let message_box = document.createElement("div");
     message_box.classList.add("msg_cotainer");
-    message_box.src = msgVO.msg_img;
-	message_box.width = 200;
-	message_box.height = 200;           
+    let message_img = document.createElement("img");
+    message_img.src = msgVO.msg_img;
+	message_img.width = 200;
+	message_img.height = 200;           
 
 	//名子
 	let message_name = document.createElement("span");
@@ -437,19 +586,119 @@ function setOtherImgInnerHTML(msgVO) {
 
     //時間
     let message_time = document.createElement("span");
-    message_time.classList.add("msg_time_send");
-	let NowDate=new Date();
-	let h=NowDate.getHours();
-//	let m=NowDate.getMinutes();
-	let m = (NowDate.getMinutes()<10 ? '0' : '') + NowDate.getMinutes();　
-	message_time.innerHTML = h + ":" + m    
+    message_time.classList.add("msg_time");
+	let date;
+	if(is_realtime){
+		date = new Date();    	
+	}else{
+		date = new Date(msgVO.msg_time);			
+	}
+	let h = date.getHours();
+	let m = (date.getMinutes()<10 ? '0' : '') + date.getMinutes();　
+	message_time.innerHTML = h + ":" + m		    
           
     //放入html中
+    message_box.appendChild(message_img);
     message_box.appendChild(message_name);
     message_box.appendChild(message_time);
     div.appendChild(div_img);
     div.appendChild(message_box);    
-    parent[0].appendChild(div);          
+    parent.appendChild(div);          
+}
+
+
+function showLastMessage(msgVO) {
+	//註冊到好友清單中
+	friendMap.set(msgVO.msg_from, msgVO.msg_from_user_name);
+
+    let parent = document.getElementsByClassName("card-body");
+    
+    //整條row
+    let div = document.createElement("div");
+    div.classList.add("msg_t01");
+    div.classList.add("row");
+    div.classList.add("border_dff");
+    
+    //包圖片div
+    let img_div = document.createElement("div");
+    img_div.classList.add("col-2");
+    img_div.classList.add("img_cont_msg");
+    
+    //朋友大頭照圖片
+    let img = document.createElement("img");
+    img.classList.add("rounded-circle");
+    img.classList.add("user_img_msg");
+    img.setAttribute("name", msgVO.msg_from);
+    img.src = msgVO.msg_headshot;
+    img_div.appendChild(img);
+        
+    //姓名div
+    let name_div = document.createElement("div");
+    name_div.classList.add("col-8");
+    name_div.classList.add("msg_t03");    
+    let name_span = document.createElement("span");
+    name_span.classList.add("msg_naem_01_1");
+    name_span.innerHTML = msgVO.msg_from_user_name
+//    let lastMsg_a = document.createElement("a");
+//    lastMsg_a.classList.add("fa_d01");
+//    if(msgVO.msg_content){
+//    	lastMsg_a.innerText = msgVO.msg_content;
+//    }else{
+//    	lastMsg_a.innerText = msgVO.msg_from_user_name + "  傳送了一個圖片";
+//    }    
+//    lastMsg_a.href = "#";
+    name_div.appendChild(name_span);
+//    name_div.appendChild(lastMsg_a);
+        
+    //放入html中
+    div.appendChild(img_div);
+    div.appendChild(name_div);    
+            
+    //未讀數量div
+    let unread_div = document.createElement("div");
+    unread_div.classList.add("col-2");
+    let unread_a = document.createElement("a");
+    unread_a.classList.add("fa_db");
+    unread_a.classList.add("msg_link_01");
+    unread_a.classList.add("badge_01");
+    unread_a.classList.add("badge-pill");
+    unread_a.classList.add("badge-warning");
+    unread_a.setAttribute("name", msgVO.msg_from);
+    unread_a.style.marginTop = 10 + 'px';
+    if(typeof userMap.get(msgVO.msg_from) != "undefined"){
+    	console.log("UserMap");
+    	unread_a.innerText = userMap.get(msgVO.msg_from);
+    }else{
+    	console.log("設定為零");
+    	userMap.set(msgVO.msg_from,0);    	
+    	unread_a.innerText = 0;
+    	unread_a.style.visibility = "hidden";
+    	console.log(unread_a.innerText);    	
+    }    
+    unread_div.appendChild(unread_a);
+    div.appendChild(unread_div);      
+    
+    //新增onclick事件(跳轉到1-1聊天室)
+	div.addEventListener('click', function(){
+		openPageOneToOne("c_talk_1-1", msgVO.msg_from, msgVO.msg_headshot, msgVO.msg_from_user_name)
+		othersideID = msgVO.msg_from;
+		chatRoomIsOpen = true;
+        let message = {
+			"msg_from": msgVO.msg_from,
+			"msg_to": userID,
+			"msg_type" : "getMessage"
+        };
+        webSocket.send(JSON.stringify(message));            
+        //將未讀訊息數量改成0
+        if(userMap.has(msgVO.msg_from)){
+        	userMap.set(msgVO.msg_from,0);
+        	let unread_a = document.querySelectorAll("a[name="+ msgVO.msg_from + "]")[0];
+			unread_a.innerText = 0;
+        	unread_a.style.visibility = "hidden";     		
+        } 			  
+	});    
+    //放入html中
+    parent[1].appendChild(div);
 }
 
 //scroll bar滑動至第一則未讀訊息上。
@@ -460,7 +709,7 @@ function setMessageInnerHTML_adjustBar(innerHTML) {
 }
 
 //送出訊息時，scroll bar滑動至底。
-function scroll_to_bottom(){
-	let div = document.getElementsByClassName("ex1-2");
-	div[0].scrollTop = div[0].scrollHeight;                   
+function scroll_to_bottom(index){
+	let div = document.getElementsByClassName("ex1-2")[index];
+	div.scrollTop = div.scrollHeight;                   
 }   

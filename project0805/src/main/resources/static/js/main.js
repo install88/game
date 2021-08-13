@@ -1,5 +1,8 @@
 let userMap= new Map();
+let friendMap = new Map();
 const userID = document.getElementById('userID').value;
+var othersideID;
+var chatRoomIsOpen = false;
 console.log("userID" + userID);
 var userName;
 var userHeadshot;
@@ -9,6 +12,7 @@ var commWebSocket;
 let answerSetting_isReady = false;
 let localStream;
 var peer;
+var searchKeyword = null;
 
 //使用Google的stun服务器
 // 	var configuration = { "iceServers": [{ "url": "stun:stun.example.org" }] };
@@ -16,26 +20,7 @@ var configuration = { "iceServers": [{ "url": "stun:stun.1und1.de:3478" }] };
 
 
 
-$(document).ready(function(){
-//    $("#onLineUser").change(function(){
-//    	document.getElementById('message').
-//    	innerHTML="";
-//    	var msg_from = $("#onLineUser").val();
-//        var message = {
-//                "msg_from": msg_from,
-//                "msg_to": userID,
-//                "msg_type" : "getMessage"
-//        };
-//        webSocket.send(JSON.stringify(message));            
-//        //將未讀訊息數量改成0
-//        if(userMap.has(msg_from)){
-//        	userMap.set(msg_from,0);	
-//        } 
-//        build_chatting();
-//    });
-    
-    
-
+$(document).ready(function(){      
     $(".sendFileToAll").click(function(){
     	console.log("hello!!!!!!!!!!!!!!!!!!!");
     	$('#sendFileToAllInput').click();
@@ -43,34 +28,42 @@ $(document).ready(function(){
 	
     $("#sendFileToAllInput").change(function(){
     	console.log("change~~~~");
-		readURL(this,"ALL");		
+		readURL(this,"ALL", 0, true);		
 	});  	
+	
+    $(".sendFileToOne").click(function(){
+    	console.log("hello!!!!!!!!!!!!!!!!!!!");
+    	$('#sendFileToOneInput').click();
+	});      	
+	
+    $("#sendFileToOneInput").change(function(){
+    	console.log("change~~~~");
+		readURL(this, othersideID, 2, true);		
+	}); 	
 	 
 });  
 
-function readURL(input,msg_to){
+function readURL(input,msg_to, index, is_realtime){
 	console.log(msg_to);
 	if(!isCanvasSupported){
 		console.log("無法用canvas");
 	}else{
-		compress(input, function(base64Img){
-			console.log(base64Img);
-			setOwnImgInnerHTML(base64Img);
-//		    let selectText = $("#onLineUser").find("option:selected").text();
-//		    var selectText = $("#onLineUser").val();
-			var message = {            
+		compress(input, function(base64Img){						
+			let msgVO = {            
 					"msg_from": userID,
     	            "msg_to": msg_to,
                     "msg_img": base64Img,
                     "msg_status" : 0,
-	        };  	
+	        };
+	        
+	        setOwnImgInnerHTML(msgVO, index, is_realtime);  	
 	        			                    
 		    if(msg_to == "ALL"){
-		    	message["msg_type"] = "broadcast";
+		    	msgVO["msg_type"] = "broadcast";
 		    }else{
-		    	message["msg_type"] = "save";
+		    	msgVO["msg_type"] = "save";
 		    }    									
-			webSocket.send(JSON.stringify(message));				
+			webSocket.send(JSON.stringify(msgVO));				
 		});
 	}		
 }

@@ -72,7 +72,8 @@
             <div class="row dp_b004 ">
                 <button class="tablink col" id="btn_top001" onclick="openPage('a_chatroom', this, '#ff9900ba')"></button>
                 <button class="tablink col" id="btn_top002" onclick="openPage('b_chatroom_talk', this, '#ff9900ba')"></button>
-                <button class="tablink col" id="btn_top003" onclick="openPage('c_talk_1-1', this,'#ff9900ba')"></button>
+<!--                 <button class="tablink col" id="btn_top003" onclick="openPage('c_talk_1-1', this,'#ff9900ba')"></button> -->
+                <button class="tablink col" id="btn_top003" onclick="customer_service_chat(this,'#ff9900ba')"></button>                                
             </div>
             <div>
                 <!-- news -->
@@ -84,8 +85,10 @@
                     <div class="sd_01">
                     </div>
                     <div class="sd_02">
-                        <form>
-                            <input type="text" name="search" onclick="openPage('d_search')" placeholder="搜尋">
+<!--                         <form name="searchform" onsubmit="test();"> -->
+                        <form name="searchform" onsubmit="return false;">
+<!--                             <input type="text" name="search" onclick="openPage('d_search')" placeholder="搜尋"> -->
+                            <input type="text" name="search" placeholder="搜尋">
                         </form>
                     </div>
                     <div class="sd_03"></div>
@@ -111,85 +114,16 @@
                             <!-- 內容、-->
                             <div class="card-body msg_card_body">
                                 <!-- 對話-->
-                                <div class="d-flex justify-content-start mb-4  msg_t01 ">
-                                    <div class="img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg">              
-                                    </div>
-                                    <div class="msg_cotainer">
-                                        <span class="msg_naem_01">錢貓</span>
-                                        [愛慕]君悅[愛慕]【祝好運中大獎】★ 【賴I D: 0909723188】[麻將][麻將]
-                                        <span class="msg_time">8:40</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-end mb-4 msg_t01">
-                                    <div class="msg_cotainer_send">
-                                        <span class="msg_naem_01">錢貓</span>
-                                        Hi
-                                        <span class="msg_time_send">8:55</span>
-                                    </div>
-                                    <div class="img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_02.png}"  class="rounded-circle user_img_msg">
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-start mb-4  msg_t01 ">
-                                    <div class="img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_01.png}"  class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="msg_cotainer">
-                                        <span class="msg_naem_01">錢貓</span>
-                                        [愛慕]君悅[愛慕]【祝好運中大獎】★ 【賴I D: 0909723188】[麻將][麻將]
-                                        <span class="msg_time">8:40</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-start mb-4  msg_t01 ">
-                                    <div class="img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_03.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="msg_cotainer">
-                                        <span class="msg_naem_01">錢貓</span>
-                                        [愛慕]君悅[愛慕]【祝好運中大獎】★ 【賴I D: 0909723188】[麻將][麻將]
-                                        <span class="msg_time">8:40</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-start mb-4  msg_t01 ">
-                                    <div class="img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_03.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="msg_cotainer">
-                                        <span class="msg_naem_01">錢貓</span>
-                                        [愛慕]君悅[愛慕]【祝好運中大獎】★ 【賴I D: 0909723188】[麻將][麻將]
-                                        <span class="msg_time">8:40</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-end mb-4 msg_t01">
-                                    <div class="msg_cotainer_send">
-                                        <span class="msg_naem_02">錢貓</span>
-                                        ok好運好運好運好運好運好運
-                                        <span class="msg_time_send">8:55</span>
-                                    </div>
-                                    <div class="img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_02.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-start mb-4  msg_t01 ">
-                                    <div class="img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_03.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="msg_cotainer">
-                                        <span class="msg_naem_01">錢貓</span>
-                                        [愛慕]君悅[愛慕]【祝好運中大獎】★ 【賴I D: 0909723188】[麻將][麻將]
-                                        <span class="msg_time">8:40</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-end mb-4 msg_t01">
-                                    <div class="msg_cotainer_send">
-                                        ok好運好運好運好運好運好運
-                                        <span class="msg_time_send">8:55</span>
-                                    </div>
-                                    <div class="img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_02.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                </div>
+<!--                                 <div class="d-flex justify-content-start mb-4  msg_t01 "> -->
+<!--                                     <div class="img_cont_msg"> -->
+<!--                                         <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg">               -->
+<!--                                     </div> -->
+<!--                                     <div class="msg_cotainer"> -->
+<!--                                         <span class="msg_naem_01">錢貓</span> -->
+<!--                                         [愛慕]君悅[愛慕]【祝好運中大獎】★ 【賴I D: 0909723188】[麻將][麻將] -->
+<!--                                         <span class="msg_time">8:40</span> -->
+<!--                                     </div> -->
+<!--                                 </div>                                            -->
                             </div>
                         </div>
                         <!-- menu  -->
@@ -223,105 +157,18 @@
                             <div class="card-body msg_card_body">
                                 <!-- 對話-->
                                 <div class="  msg_t01 row  border_dff">
-                                    <div class=" col-2 img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="col-8  msg_t03" onclick="openPage('c_talk_1-1')">
-                                        <span class="msg_naem_01_1">錢貓</span>
-                                        <a class="fa_d01 " onclick="openPage('c_talk_1-1')">賴I D: 0909723188】[麻將][麻將]</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <a class=" fa_db  msg_link_01 badge_01 badge-pill badge-warning" style="margin-top: 10px;" onclick="openPage('c_talk_1-1')">3
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="  msg_t01 row  border_dff">
-                                    <div class=" col-2 img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_02.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="col-8  msg_t03" href="#">
-                                        <span class="msg_naem_01_1">錢貓</span>
-                                        <a class="fa_d01 " href="#">賴I D: 0909723188】[麻將][麻將]</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <a class=" fa_db  msg_link_01 badge_01 badge-pill badge-warning" style="margin-top: 10px;" href="#">3
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="  msg_t01 row  border_dff">
-                                    <div class=" col-2 img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_03.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="col-8  msg_t03" href="#">
-                                        <span class="msg_naem_01_1">錢貓</span>
-                                        <a class="fa_d01 " href="#">賴I D: 0909723188】[麻將][麻將]</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <a class=" fa_db  msg_link_01 badge_01 badge-pill badge-warning" style="margin-top: 10px;" href="#">3
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="  msg_t01 row  border_dff">
-                                    <div class=" col-2 img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_04.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="col-8  msg_t03" href="#">
-                                        <span class="msg_naem_01_1">錢貓</span>
-                                        <a class="fa_d01 " href="#">賴I D: 0909723188】[麻將][麻將]..</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <a class=" fa_db  msg_link_01 badge_01 badge-pill badge-warning" style="margin-top: 10px;" href="#">3
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="  msg_t01 row  border_dff">
-                                    <div class=" col-2 img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_05.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="col-8  msg_t03" href="#">
-                                        <span class="msg_naem_01_1">錢貓</span>
-                                        <a class="fa_d01 " href="#">賴I D: 0909723188】[麻將][麻將]</a>
-                                    </div>
-                                    <div class="col-2">
-                                    </div>
-                                </div>
-                                <div class="  msg_t01 row  border_dff">
-                                    <div class=" col-2 img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="col-8  msg_t03" href="#">
-                                        <span class="msg_naem_01_1">錢貓</span>
-                                        <a class="fa_d01 " href="#">賴I D: 0909723188】[麻將][麻將]</a>
-                                    </div>
-                                    <div class="col-2">
-                                    </div>
-                                </div>
-                                <div class="msg_t01 row  border_dff">
-                                    <div class=" col-2 img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="col-8  msg_t03" href="#">
-                                        <span class="msg_naem_01_1">錢貓</span>
-                                        <a class="fa_d01 " href="#">賴I D: 0909723188】[麻將][麻將]</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <a class=" fa_db  msg_link_01 badge_01 badge-pill badge-warning" style="margin-top: 10px;" href="#">3
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="  msg_t01 row  border_dff">
-                                    <div class=" col-2 img_cont_msg">
-                                        <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg">
-                                    </div>
-                                    <div class="col-8  msg_t03" href="#">
-                                        <span class="msg_naem_01_1">錢貓</span>
-                                        <a class="fa_d01 " href="#">賴I D: 0909723188】[麻將][麻將]</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <a class=" fa_db  msg_link_01 badge_01 badge-pill badge-warning" style="margin-top: 10px;" href="#">3
-                                        </a>
-                                    </div>
-                                </div>
+<!--                                     <div class=" col-2 img_cont_msg"> -->
+<!--                                         <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg"> -->
+<!--                                     </div> -->
+<!--                                     <div class="col-8  msg_t03" onclick="openPage('c_talk_1-1')"> -->
+<!--                                         <span class="msg_naem_01_1">錢貓</span> -->
+<!--                                         <a class="fa_d01 " onclick="openPage('c_talk_1-1')">賴I D: 0909723188】[麻將][麻將]</a> -->
+<!--                                     </div> -->
+<!--                                     <div class="col-2"> -->
+<!--                                         <a class=" fa_db  msg_link_01 badge_01 badge-pill badge-warning" style="margin-top: 10px;" onclick="openPage('c_talk_1-1')">3 -->
+<!--                                         </a> -->
+<!--                                     </div> -->
+                                </div>     
                             </div>
                         </div>
                     </div>
@@ -403,7 +250,8 @@
 
                             // When the user clicks the button, open the modal 
                             btn.onclick = function() {
-                              modal.style.display = "block";
+								modal.style.display = "block";
+								build_chatting();
                             }
 
                             // When the user clicks on <span> (x), close the modal
@@ -421,6 +269,7 @@
                         </script>
                     <!--  body -->
                     <div class="ex1-2">
+                    	<video id="remoteVideo" style="width: 400px;height: 300px;"></video>
                         <!-- 內容、-->
                         <div class="card-body msg_card_body">
                             <!-- 對話-->
@@ -521,7 +370,8 @@
                 <div class="submit_c" style="height: 40px">
                     <div class="sd_01 c_d">
                         <a class="fa_d">
-                            <i class="fas fa-file-image" style="font-size: 2.5em;"></i>
+                            <i class="fas fa-file-image sendFileToOne" style="font-size: 2.5em;"></i>
+                            <input id="sendFileToOneInput" type="file" style="display:none;" accept="image/*" multiple/>
                         </a>
                     </div>
                     <div class="sd_02">
@@ -529,7 +379,7 @@
                     </div>
                     <div class="sd_03"></div>
                     <div class="sd_04 r_d">
-                        <button class="btn btn-danger" type="button" style="border-radius: 50px;"><i class="fas fa-location-arrow "></i></button>
+                        <button class="btn btn-danger" type="button" style="border-radius: 50px;" onclick="sendOne()"><i class="fas fa-location-arrow "></i></button>
 <!--                     個人聊天室的 -->
                     </div>
                 </div>
@@ -541,110 +391,19 @@
                     <!-- 內容、-->
                     <div class="card-body msg_card_body">
                         <!-- 對話-->
-                        <div class="  msg_t01 row  border_dff">
-                            <div class=" col-2 img_cont_msg">
-                                <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg">
-                            </div>
-                            <div class="col-8  msg_t03" onclick="openPage('c_talk_1-1')">
-                                <span class="msg_naem_01_1">錢貓</span>
-                                <a class="fa_d01 " onclick="openPage('c_talk_1-1')">找到 41 則訊息</a>
-                            </div>
-                            <div class="col-2">
-                                <a class="fa_d01  fas fa-angle-right fa-2x " onclick="openPage('c_talk_1-1')">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="  msg_t01 row  border_dff">
-                            <div class=" col-2 img_cont_msg">
-                                <img th:src="@{/static/img/user_portrait/talk_03.png}" class="rounded-circle user_img_msg">
-                            </div>
-                            <div class="col-8  msg_t03" href="#">
-                                <span class="msg_naem_01_1">錢貓</span>
-                                <a class="fa_d01 " href="#">找到 41 則訊息</a>
-                            </div>
-                            <div class="col-2">
-                                <a class="fa_d01  fas fa-angle-right fa-2x " href="#">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="  msg_t01 row  border_dff">
-                            <div class=" col-2 img_cont_msg">
-                                <img th:src="@{/static/img/user_portrait/talk_04.png}" class="rounded-circle user_img_msg">
-                            </div>
-                            <div class="col-8  msg_t03" href="#">
-                                <span class="msg_naem_01_1">錢貓</span>
-                                <a class="fa_d01 " href="#">找到 41 則訊息</a>
-                            </div>
-                            <div class="col-2">
-                                <a class="fa_d01  fas fa-angle-right fa-2x " href="#">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="  msg_t01 row  border_dff">
-                            <div class=" col-2 img_cont_msg">
-                                <img th:src="@{/static/img/user_portrait/talk_04.png}" class="rounded-circle user_img_msg">
-                            </div>
-                            <div class="col-8  msg_t03" href="#">
-                                <span class="msg_naem_01_1">錢貓</span>
-                                <a class="fa_d01 " href="#">找到 41 則訊息</a>
-                            </div>
-                            <div class="col-2">
-                                <a class="fa_d01  fas fa-angle-right fa-2x " href="#">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="  msg_t01 row  border_dff">
-                            <div class=" col-2 img_cont_msg">
-                                <img th:src="@{/static/img/user_portrait/talk_04.png}" class="rounded-circle user_img_msg">
-                            </div>
-                            <div class="col-8  msg_t03" href="#">
-                                <span class="msg_naem_01_1">錢貓</span>
-                                <a class="fa_d01 " href="#">找到 41 則訊息</a>
-                            </div>
-                            <div class="col-2">
-                                <a class="fa_d01  fas fa-angle-right fa-2x " href="#">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="  msg_t01 row  border_dff">
-                            <div class=" col-2 img_cont_msg">
-                                <img th:src="@{/static/img/user_portrait/talk_04.png}" class="rounded-circle user_img_msg">
-                            </div>
-                            <div class="col-8  msg_t03" href="#">
-                                <span class="msg_naem_01_1">錢貓</span>
-                                <a class="fa_d01 " href="#">找到 41 則訊息</a>
-                            </div>
-                            <div class="col-2">
-                                <a class="fa_d01  fas fa-angle-right fa-2x " href="#">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="  msg_t01 row  border_dff">
-                            <div class=" col-2 img_cont_msg">
-                                <img th:src="@{/static/img/user_portrait/talk_04.png}" class="rounded-circle user_img_msg">
-                            </div>
-                            <div class="col-8  msg_t03" href="#">
-                                <span class="msg_naem_01_1">錢貓</span>
-                                <a class="fa_d01 " href="#">找到 41 則訊息</a>
-                            </div>
-                            <div class="col-2">
-                                <a class="fa_d01  fas fa-angle-right fa-2x " href="#">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="  msg_t01 row  border_dff">
-                            <div class=" col-2 img_cont_msg">
-                                <img th:src="@{/static/img/user_portrait/talk_04.png}" class="rounded-circle user_img_msg">
-                            </div>
-                            <div class="col-8  msg_t03" href="#">
-                                <span class="msg_naem_01_1">錢貓</span>
-                                <a class="fa_d01 " href="#">找到 41 則訊息</a>
-                            </div>
-                            <div class="col-2">
-                                <a class="fa_d01  fas fa-angle-right fa-2x " href="#">
-                                </a>
-                            </div>
-                        </div>
+<!--                         <div class="  msg_t01 row  border_dff"> -->
+<!--                             <div class=" col-2 img_cont_msg"> -->
+<!--                                 <img th:src="@{/static/img/user_portrait/talk_01.png}" class="rounded-circle user_img_msg"> -->
+<!--                             </div> -->
+<!--                             <div class="col-8  msg_t03" onclick="openPage('c_talk_1-1')"> -->
+<!--                                 <span class="msg_naem_01_1">錢貓</span> -->
+<!--                                 <a class="fa_d01 " onclick="openPage('c_talk_1-1')">找到 41 則訊息</a> -->
+<!--                             </div> -->
+<!--                             <div class="col-2"> -->
+<!--                                 <a class="fa_d01  fas fa-angle-right fa-2x " onclick="openPage('c_talk_1-1')"> -->
+<!--                                 </a> -->
+<!--                             </div> -->
+<!--                         </div> -->
                     </div>
                 </div>
             </div>
@@ -666,26 +425,202 @@
         <div class="col p_01d" id="button008">
             <img th:src="@{/static/img/talk_b_01.png}">
         </div>
-    </div>
+    </div>	   
     <script>
-    function openPage(pageName, elmnt, color) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-
-        tablinks = document.getElementsByClassName("tablink");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].style.backgroundColor = "";
-        }
-
-        document.getElementById(pageName).style.display = "block";
-        elmnt.style.backgroundColor = color;
-
-        // Get the element with id="defaultOpen" and click on it
-//         document.getElementById("defaultOpen").click();
-    }
+	    function openPage(pageName, elmnt, color) {
+	    	console.log(color);
+	    	chatRoomIsOpen = false;
+	        var i, tabcontent, tablinks;
+	        tabcontent = document.getElementsByClassName("tabcontent");
+	        for (i = 0; i < tabcontent.length; i++) {
+	            tabcontent[i].style.display = "none";
+	        }
+	
+	        tablinks = document.getElementsByClassName("tablink");
+	        for (i = 0; i < tablinks.length; i++) {
+	            tablinks[i].style.backgroundColor = "";
+	        }
+	
+	        document.getElementById(pageName).style.display = "block";
+	        if(typeof color != "undefined"){
+	        	elmnt.style.backgroundColor = color;	
+	        }	        	
+	        // Get the element with id="defaultOpen" and click on it
+	//         document.getElementById("defaultOpen").click();
+	    }
+	    
+	    function openPageOneToOne(pageName, msg_to, msg_imgSrc, msg_from_user_name, keyword) {	    
+	        var i, tabcontent, tablinks;
+	        tabcontent = document.getElementsByClassName("tabcontent");
+	        for (i = 0; i < tabcontent.length; i++) {
+	            tabcontent[i].style.display = "none";
+	        }
+	
+	        tablinks = document.getElementsByClassName("tablink");
+	        for (i = 0; i < tablinks.length; i++) {
+	            tablinks[i].style.backgroundColor = "";
+	        }
+	        
+	        document.getElementById(pageName).style.display = "block";
+	        
+	        if(keyword){
+	        	searchKeyword = keyword;
+	        }
+	        
+	        changeMessageWindowInfo(msg_to, msg_imgSrc, msg_from_user_name);
+	    }	    
+	    
+	    function changeMessageWindowInfo(msg_to, msg_imgSrc, msg_from_user_name){	    	
+	        let parent = document.getElementsByClassName("col-4 bg-dark_d01")[0];
+	        while (parent.firstChild) {
+	        	parent.removeChild(parent.firstChild);
+	        }	 
+	        	        	        
+	        //整條row
+	        let div = document.createElement("div");
+	        div.classList.add("img_cont_msg");
+	        div.style.marginBottom = 10 + 'px';
+	      
+	        //圖片
+	        let img = document.createElement("img");
+	        img.classList.add("rounded-circle");
+	        img.classList.add("user_img_msg");
+	        img.src = msg_imgSrc;
+	        img.id = "chattingUserImg";
+	        
+	        //名子
+	        let name_span = document.createElement("span");
+	        name_span.classList.add("msg_naem_03");
+	        name_span.innerHTML = msg_from_user_name;
+	        
+	        //放入html
+	        div.appendChild(img);
+	        div.appendChild(name_span);
+	        parent.appendChild(div);
+	        
+	        //清除聊天內容
+	        let content_parent = document.getElementsByClassName("card-body")[2];
+	        while (content_parent.firstChild) {
+	        	content_parent.removeChild(content_parent.firstChild);
+	        }		        
+	    }
+	    
+	    function customer_service_chat(elmnt, color){	    	
+			openPageOneToOne("c_talk_1-1", "MEM12345678987654321", "", "客服", null)
+			othersideID = "MEM12345678987654321";
+	        let message = {
+				"msg_from": "MEM12345678987654321",
+				"msg_to": userID,
+				"msg_type" : "getMessage"
+	        };
+	        webSocket.send(JSON.stringify(message));
+	        document.getElementById("chattingUserImg").src = "../static/img/user_portrait/talk_05.png";
+	        
+	        elmnt.style.backgroundColor = color;
+	    } 
+	    
+// 	    $(document).ready(function(){ 
+	    $("form[name='searchform']").on('submit', function(){
+	    	let keyword = $("input[name='search']").val();
+	        $.ajax({	        	
+	            url: '/member/searchKeyword/',              // 要傳送的頁面
+	            method: 'POST',               // 使用 POST 方法傳送請求
+	            dataType: 'json',             // 回傳資料會是 json 格式
+	            data: {"keyword" : keyword,
+	            	    "userID" : userID},  // 將表單資料用打包起來送出去
+	            success: function(res){// 成功以後會執行這個方法
+	            	let keywordMap= new Map();
+	            	res.forEach(function(msgVO){	            				    				    	
+    					if(msgVO.msg_from == userID){
+                			handleMapLogic(keywordMap, msgVO.msg_to, msgVO.msg_count);
+                		}else{
+                			handleMapLogic(keywordMap, msgVO.msg_from, msgVO.msg_count);             		
+                		}	    						            	 		    					            		
+	            	})
+	            	openPage('d_search');
+	    	        let parent = document.getElementsByClassName("msg_card_body")[3];
+	    	        while (parent.firstChild) {
+	    	        	parent.removeChild(parent.firstChild);
+	    	        }		            	
+    				for (let [key, value] of keywordMap) {
+    					let img = document.querySelectorAll('img[name='+ key + ']')[0];
+    					test(key, img.src, value, keyword);					
+    				}		            			               
+	            },
+	        });
+	    });	 
+// 	    });	    
+   
+		function test(msg_from, user_headshot, count, keyword){
+			let parent = document.getElementsByClassName("card-body")[3];
+		    //整條row
+		    let div = document.createElement("div");
+		    div.classList.add("msg_t01");
+		    div.classList.add("row");
+		    div.classList.add("border_dff");
+		    
+		    //包圖片div
+		    let img_div = document.createElement("div");
+		    img_div.classList.add("col-2");
+		    img_div.classList.add("img_cont_msg");
+		    
+		    //朋友大頭照圖片
+		    let img = document.createElement("img");
+		    img.classList.add("rounded-circle");
+		    img.classList.add("user_img_msg");
+		    img.src = user_headshot;
+		    img_div.appendChild(img);
+		        
+		    //姓名div
+		    let name_div = document.createElement("div");
+		    name_div.classList.add("col-8");
+		    name_div.classList.add("msg_t03");    
+		    let name_span = document.createElement("span");
+		    name_span.classList.add("msg_naem_01_1");
+		    name_span.innerHTML = friendMap.get(msg_from);
+		    name_div.appendChild(name_span);
+		    
+		    let message_count = document.createElement("a");
+		    message_count.classList.add("fa_d01");
+		    message_count.innerText = "找到" + count + "則訊息";
+		    name_div.appendChild(message_count);
+      
+		    //未讀數量div
+		    let unread_div = document.createElement("div");
+		    unread_div.classList.add("col-2");
+		    let unread_a = document.createElement("a");
+		    unread_a.classList.add("fa_d01");
+		    unread_a.classList.add("fas");
+		    unread_a.classList.add("fa-angle-right");
+		    unread_a.classList.add("fa-2x");
+		    unread_div.appendChild(unread_a);
+		    
+		    //新增onclick事件(跳轉到1-1聊天室)
+			div.addEventListener('click', function(){
+				openPageOneToOne("c_talk_1-1", msg_from, user_headshot, friendMap.get(msg_from), keyword)
+				othersideID = msg_from;
+				chatRoomIsOpen = true;
+		        let message = {
+					"msg_from": msg_from,
+					"msg_to": userID,
+					"msg_type" : "getMessage"
+		        };
+		        webSocket.send(JSON.stringify(message));            
+		        //將未讀訊息數量改成0
+		        if(userMap.has(msg_from)){
+		        	userMap.set(msg_from, 0);
+		        	let unread_a = document.querySelectorAll("a[name="+ msg_from + "]")[0];
+					unread_a.innerText = 0;
+		        	unread_a.style.visibility = "hidden";     		
+		        } 			  
+			});  		    
+		    
+		    //放入html中
+		    div.appendChild(img_div);
+		    div.appendChild(name_div);    		    
+		    div.appendChild(unread_div);		    
+		    parent.appendChild(div);		    
+		}	    
     </script>
     <!-- end -->
     <div class="col-lg-3  col-dm-0 d-none d-sm-block"></div>
@@ -694,5 +629,6 @@
 </body>
 <script type="text/javascript" th:src="@{/static/js/main.js}"></script>
 <script type="text/javascript" th:src="@{/static/js/connection.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/webRTC.js}"></script>
 
 </html>

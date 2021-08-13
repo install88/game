@@ -61,5 +61,19 @@ public class MsgService {
     @Transactional
     public void msgUpdateStatus(String msg_from, String msg_to) {
     	msgMapper.msgUpdateStatus(msg_from, msg_to);
-    }    
+    }
+    
+    @Transactional
+    public void addFriend(String msg_from, String msg_to) {
+    	msgMapper.addFriend(msg_from, msg_to);
+    }       
+    
+    public List<MsgVO> getFriendList(String userID) {
+    	return msgMapper.getFriendList(userID);
+    }       
+    
+    public MsgVO getMemeberPhoto(String msg_from) {
+    	return msgMapper.getMemeberPhoto(msg_from);
+    }
+            
 }

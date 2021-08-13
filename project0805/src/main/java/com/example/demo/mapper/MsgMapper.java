@@ -42,5 +42,14 @@ public interface MsgMapper{
         
     //將未讀訊息修改成已讀狀態
     int msgUpdateStatus(String msg_from,String msg_to);
- 
+    
+    //加好友
+    int addFriend(String msg_from,String msg_to);
+    
+    //顯示好友清單
+    List<MsgVO> getFriendList(String userID);
+    
+    //取得陌生人大頭照
+    MsgVO getMemeberPhoto(String msg_from); 
+    
 }

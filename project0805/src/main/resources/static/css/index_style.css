@@ -85,8 +85,8 @@ div.gallery:hover {
 	width:30px;
 	height:55px;
 	background: url('../img/button003_a_top.png') 0 0;
-  border: 0;\
-  uotline:none;
+	border: 0;
+	outline:none;
 }
 
 
